@@ -22,7 +22,7 @@ export const MilestoneEmail = ({ fullName }: { fullName: string }) => {
                     <Section>
                         <Text style={logo}>
                             <Img
-                                src="/icons/logo.svg"
+                                src="https://bookwise-library-rho.vercel.app/logo.png"
                                 height={30}
                                 width={30}
                                 alt='logo'
@@ -58,15 +58,13 @@ export default MilestoneEmail;
 
 const main = {
     backgroundColor: '#0f172a',
-    padding: '40px 0',
-};
-
-const container = {
-    backgroundColor: '#0f172a',
+    padding: '20px 0',
     borderRadius: '8px',
     width: '480px',
     margin: '0 auto',
-    padding: '32px',
+};
+
+const container = {
     color: 'white',
     fontFamily: 'Helvetica, Arial, sans-serif',
 };
