@@ -1,8 +1,12 @@
+import { Resend } from "resend";
 import { db } from "@/database/drizzle";
 import { users } from "@/database/schema";
-import { sendEmail } from "@/lib/workflow";
+import config from "@/lib/config";
 import { serve } from "@upstash/workflow/nextjs"
 import { eq } from "drizzle-orm";
+import WelcomeEmail from "@/email/WelcomeEmail";
+import WeMissYou from "@/email/WeMissYou";
+import MilestoneEmail from "@/email/MilestoneEmail";
 
 type UserState = "non-active" | "active";
 
@@ -35,16 +39,17 @@ const getUserState = async (email: string): Promise<UserState> => {
     return "active";
 }
 
+const resend = new Resend(config.env.resendToken)
 
 export const { POST } = serve<InitialData>(async (context) => {
     const { email, fullName } = context.requestPayload
 
-    //Welcome Email
     await context.run("new-signup", async () => {
-        await sendEmail({
-            email,
-            subject: "Welcome to the platform!",
-            message: `Welcome ${fullName}`
+        await resend.emails.send({
+            from: `BookWise <contact@devamit.info>`,
+            to: [email],
+            subject: "Start reading smarter with BookWise!",
+            react: WelcomeEmail({ fullName: fullName })
         })
     })
 
@@ -57,18 +62,20 @@ export const { POST } = serve<InitialData>(async (context) => {
 
         if (state === "non-active") {
             await context.run("send-email-non-active", async () => {
-                await sendEmail({
-                    email,
-                    subject: "Are you still there?",
-                    message: `Hey ${fullName}, we miss you!`
+                await resend.emails.send({
+                    from: `BookWise <contact@devamit.info>`,
+                    to: [email],
+                    subject: `Your bookshelf misses you, ${fullName.split(" ")[0]}`,
+                    react: WeMissYou({ fullName: fullName })
                 })
             })
         } else if (state === "active") {
             await context.run("send-email-active", async () => {
-                await sendEmail({
-                    email,
-                    subject: "Welcome back!",
-                    message: `Welcome back ${fullName}!`
+                await resend.emails.send({
+                    from: `BookWise <contact@devamit.info>`,
+                    to: [email],
+                    subject: `Great to see you again, ${fullName.split(" ")[0]}!`,
+                    react: MilestoneEmail({ fullName: fullName })
                 })
             })
         }
@@ -76,15 +83,3 @@ export const { POST } = serve<InitialData>(async (context) => {
         await context.sleep("wait-for-1-month", 60 * 60 * 24 * 30)
     }
 })
-
-// async function sendEmail(message: string, email: string) {
-//     // Implement email sending logic here
-//     console.log(`Sending ${message} email to ${email}`)
-// }
-
-// type UserState = "non-active" | "active"
-
-// const getUserState = async (): Promise<UserState> => {
-//     // Implement user state logic here
-//     return "non-active"
-// }
