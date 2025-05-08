@@ -54,7 +54,7 @@ export default WelcomeEmail;
 
 const main = {
     backgroundColor: '#0f172a',
-    padding: '20px 0',
+    padding: '20px 10px',
     borderRadius: '8px',
     width: '480px',
     margin: '0 auto',

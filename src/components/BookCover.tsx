@@ -1,6 +1,10 @@
+"use client"
+
 import { cn } from "@/lib/utils";
-import Image from "next/image";
 import BookCoverSvg from "./BookCoverSVG";
+import { buildSrc, Image as IKImage } from "@imagekit/next";
+import config from "@/lib/config";
+import { useState } from "react";
 
 type BookCoverVriant = "extraSmall" | "small" | "medium" | "regular" | "wide";
 
@@ -23,6 +27,7 @@ const BookCover = ({ className,
     variant = "regular",
     coverColor = "#012B48",
     coverImage = "https://placehold.co/400x600.png" }: Props) => {
+    const [showPlaceholder, setShowPlaceholder] = useState(true);
     return (
         <div
             className={cn(
@@ -34,7 +39,31 @@ const BookCover = ({ className,
             <BookCoverSvg coverColor={coverColor} />
 
             <div className="absolute z-10" style={{ left: '12%', width: "87.5%", height: "88%" }}>
-                <Image src={coverImage} alt="Book cover" fill className="rounded-sm object-fill" />
+                <IKImage
+                    urlEndpoint={config.env.imageKit.urlEndpoint}
+                    fill
+                    src={coverImage}
+                    alt="Book cover"
+                    loading="lazy"
+                    style={showPlaceholder ? {
+                        backgroundImage: `url(${buildSrc({
+                            urlEndpoint: config.env.imageKit.urlEndpoint,
+                            src: coverImage,
+                            transformation: [
+                                {
+                                    quality: 10,
+                                    blur: 90,
+                                }
+                            ]
+                        })})`,
+                        backgroundSize: "cover",
+                        backgroundRepeat: "no-repeat",
+                    } : {}}
+                    onLoad={() => {
+                        setShowPlaceholder(false);
+                    }}
+                    className="rounded-sm object-fill"
+                />
             </div>
         </div>
     )

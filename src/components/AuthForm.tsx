@@ -2,15 +2,17 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { DefaultValues, FieldValues, Path, SubmitHandler, useForm, UseFormReturn } from "react-hook-form"
-import { z, ZodType } from "zod"
+import { ZodType } from "zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import { FIELD_NAMES, FIELD_TYPES } from "@/constants";
-import ImageUpload from "./ImageUpload";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
+import FileUpload from "./FileUpload";
 
 interface Props<T extends FieldValues> {
     schema: ZodType<T>;
@@ -23,6 +25,7 @@ const AuthForm = <T extends FieldValues>({
     type, schema, defaultValues, onSubmit
 }: Props<T>) => {
     const router = useRouter()
+    const [loading, setLoading] = useState(false)
 
     const isSignIn = type === "SIGN_IN"
 
@@ -32,20 +35,29 @@ const AuthForm = <T extends FieldValues>({
     })
 
     const handleSubmit: SubmitHandler<T> = async (data) => {
-        const result = await onSubmit(data);
+        setLoading(true)
 
-        if (result.success) {
-            toast.success("Success", {
-                description: isSignIn
-                    ? "You have Successfully signed in."
-                    : "You have successfully signed up."
-            })
-            router.push("/");
-        } else {
-            toast.error(`Error ${isSignIn ? "signing in" : "signing up"}`, {
-                description: result.errro ?? "An error occurred."
-            })
+        try {
+            const result = await onSubmit(data);
+            if (result.success) {
+                toast.success("Success", {
+                    description: isSignIn
+                        ? "You have Successfully signed in."
+                        : "You have successfully signed up."
+                })
+                router.push("/");
+            } else {
+                toast.error(`Error ${isSignIn ? "signing in" : "signing up"}`, {
+                    description: result.errro ?? `An error occurred during ${isSignIn ? "signing in" : "signing up"}`
+                })
+            }
+        } catch (err) {
+            toast.error("An unexpected error occurred.");
+        } finally {
+            setLoading(false)
         }
+
+
     }
 
     return (
@@ -73,7 +85,13 @@ const AuthForm = <T extends FieldValues>({
                                     </FormLabel>
                                     <FormControl>
                                         {field.name === "universityCard" ? (
-                                            <ImageUpload onFileChange={field.onChange} />
+                                            <FileUpload
+                                                type="image"
+                                                accept="image/*"
+                                                placeholder="Upload your ID"
+                                                folder="ids"
+                                                variant="dark"
+                                                onFileChange={field.onChange} />
                                         ) : (
                                             <Input
                                                 required
@@ -89,7 +107,16 @@ const AuthForm = <T extends FieldValues>({
                         />
                     ))}
 
-                    <Button type="submit" className="form-btn">{isSignIn ? "Sign-In" : "Sign Up"}</Button>
+                    <Button type="submit" disabled={loading} className="form-btn">
+                        {loading ? (
+                            <>
+                                <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                                {isSignIn ? "Signing in..." : "Signing up..."}
+                            </>
+                        ) : (
+                            isSignIn ? "Sign In" : "Sign Up"
+                        )}
+                    </Button>
                 </form>
             </Form>
 

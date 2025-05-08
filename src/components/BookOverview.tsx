@@ -3,7 +3,7 @@ import { Button } from "./ui/button"
 import BookCover from "./BookCover"
 
 const BookOverview = ({
-    title, author, genre, rating, totalCopies, availableCopies, description, coverColor, coverUrl
+    title, author, genre, rating, totalCopies, availableCopies, description, coverColor, coverUrl,
 }: Book) => {
     return (
         <section className="book-overview">

@@ -15,6 +15,13 @@
       "when": 1746343260228,
       "tag": "0001_uneven_warbound",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1746735353444,
+      "tag": "0002_complex_shaman",
+      "breakpoints": true
     }
   ]
 }
