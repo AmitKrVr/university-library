@@ -1,0 +1,1 @@
+ALTER TYPE "public"."borrow_enum" RENAME TO "borrow_status";

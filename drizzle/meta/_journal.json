@@ -22,6 +22,20 @@
       "when": 1746735353444,
       "tag": "0002_complex_shaman",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1746787149653,
+      "tag": "0003_jazzy_captain_america",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1746787251916,
+      "tag": "0004_dry_toxin",
+      "breakpoints": true
     }
   ]
 }
