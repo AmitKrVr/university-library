@@ -4,8 +4,10 @@ import { cn, getInitials } from "@/lib/utils"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
+import { Avatar, AvatarFallback } from "./ui/avatar"
 import { Session } from "next-auth"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu"
+import { logoutAction } from "@/lib/actions/logout"
 
 const Header = ({ session }: { session: Session }) => {
     const pathname = usePathname()
@@ -18,21 +20,57 @@ const Header = ({ session }: { session: Session }) => {
 
             <ul className="flex flex-row items-center gap-8">
                 <li>
-                    <Link href="/library" className={cn(
+                    <Link href="/" className={cn(
                         'text-base cursor-pointer capitalize',
-                        pathname === 'library' ? 'text-light-200' : 'text-light-100')}>
-                        Library
+                        pathname === '/' ? 'text-light-200' : 'text-light-100')}>
+                        Home
                     </Link>
                 </li>
                 <li>
-                    <Link href="/my-profile">
-                        <Avatar>
-                            {/* <AvatarImage src="https://avatars.githubusercontent.com/u/136904032?v=4" /> */}
-                            <AvatarFallback className="bg-amber-100">
-                                {getInitials(session?.user?.name || "XX")}
-                            </AvatarFallback>
-                        </Avatar>
+                    <Link href="/search?page=1" className={cn(
+                        'text-base cursor-pointer capitalize',
+                        pathname.startsWith("/search") ? 'text-light-200' : 'text-light-100')}>
+                        Search
                     </Link>
+                </li>
+                <li>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Avatar>
+                                <AvatarFallback className="bg-amber-100">
+                                    {getInitials(session?.user?.name || "XX")}
+                                </AvatarFallback>
+                            </Avatar>
+                        </DropdownMenuTrigger>
+
+                        <DropdownMenuContent className="w-56 bg-dark-500 text-white border-muted-foreground mr-4">
+                            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                            <DropdownMenuSeparator className="bg-muted-foreground" />
+                            <DropdownMenuGroup>
+                                <Link href="/my-profile">
+                                    <DropdownMenuItem>
+                                        Profile
+                                    </DropdownMenuItem>
+                                </Link>
+                                <Link href="/contact-us">
+                                    <DropdownMenuItem>
+                                        Contact Us
+                                    </DropdownMenuItem>
+                                </Link>
+                                <DropdownMenuSeparator className="bg-muted-foreground" />
+                                <DropdownMenuItem>
+                                    <form
+                                        action={logoutAction}
+                                        className="w-full"
+                                    >
+                                        <button type="submit" className="w-full text-left">
+                                            Logout
+                                        </button>
+                                    </form>
+                                </DropdownMenuItem>
+                            </DropdownMenuGroup>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </li>
             </ul>
         </header>

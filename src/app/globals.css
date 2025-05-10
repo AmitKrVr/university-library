@@ -395,7 +395,7 @@
     }
 
     .pagination-btn_light {
-        @apply bg-light-300 text-dark-300 hover:bg-light-300/70;
+        @apply bg-primary text-dark-300 hover:bg-light-300/70;
     }
 
     .pagination-btn_dark {

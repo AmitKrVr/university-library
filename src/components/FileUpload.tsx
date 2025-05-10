@@ -6,6 +6,7 @@ import { useCallback, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
+import { Progress } from './ui/progress'
 
 const { publicKey, urlEndpoint } = config.env.imageKit
 
@@ -177,9 +178,9 @@ const FileUpload = ({ type,
 
                 {progress > 0 && progress !== 100 && (
                     <div className="w-full rounded-full bg-green-200">
-                        <div className="progress" style={{ width: `${progress}%` }}>
+                        <Progress value={progress} className={`w-[${progress}%] bg-green-800 p-0.5 text-center font-bebas-neue text-[8px] font-bold leading-none text-light-100`} >
                             {progress}%
-                        </div>
+                        </Progress>
                     </div>
                 )}
 

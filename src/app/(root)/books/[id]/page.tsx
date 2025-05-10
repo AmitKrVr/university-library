@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import BookCover from "@/components/BookCover";
 import BookOverview from "@/components/BookOverview";
 import BookVideo from "@/components/BookVideo";
 import { db } from "@/database/drizzle";
@@ -11,6 +12,7 @@ const BookDetailsPage = async ({ params }: { params: Promise<{ id: string }> }) 
     const session = await auth()
 
     const [bookDetails] = await db.select().from(books).where(eq(books.id, id)).limit(1);
+    const allBooks = await db.select().from(books).limit(6);
 
     if (!bookDetails) redirect("/404");
 
@@ -39,7 +41,22 @@ const BookDetailsPage = async ({ params }: { params: Promise<{ id: string }> }) 
                     </section>
                 </div>
 
-                {/* SIMILAR BOOKS */}
+                <div className="flex-1">
+                    <section className="flex flex-col gap-7">
+                        <h3>More similar books</h3>
+
+                        <div className="flex flex-wrap gap-7">
+                            {allBooks && allBooks.map((book) => (
+                                <BookCover
+                                    key={book.id}
+                                    coverColor={book.coverColor}
+                                    coverImage={book.coverUrl}
+                                    variant="medium"
+                                />
+                            ))}
+                        </div>
+                    </section>
+                </div>
             </div>
         </>
     )

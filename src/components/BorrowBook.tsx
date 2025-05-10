@@ -2,11 +2,11 @@
 
 import Image from "next/image"
 import { Button } from "./ui/button"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
 import { borrowBook } from "@/lib/actions/book"
-import { Loader2 } from "lucide-react"
+import Link from "next/link"
 
 interface Props {
     userId: string,
@@ -21,6 +21,16 @@ const BorrowBook = ({ userId, bookId, borrowingEligibility: { isEligible, messag
 
     const router = useRouter()
     const [borrowing, setBorrowing] = useState(false)
+    const pathname = usePathname();
+
+    if (pathname === "/") {
+        return (
+            <Link href={`/books/${bookId}`} className="flex items-center gap-2 px-5 font-bebas-neue text-xl text-dark-100 mt-4 min-h-14 w-fit bg-primary hover:bg-primary/90 max-md:w-full rounded-md">
+                <Image src="/icons/book.svg" alt="book" width={20} height={20} />
+                View Book Details
+            </Link>
+        )
+    }
 
     const handleBorrow = async () => {
         if (!isEligible) {
