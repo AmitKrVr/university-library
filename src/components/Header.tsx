@@ -43,9 +43,9 @@ const Header = ({ session }: { session: Session }) => {
                             </Avatar>
                         </DropdownMenuTrigger>
 
-                        <DropdownMenuContent className="w-56 bg-dark-500 text-white border-muted-foreground mr-4">
-                            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                            <DropdownMenuSeparator className="bg-muted-foreground" />
+                        <DropdownMenuContent className="w-56 bg-dark-500 text-white border-gray-800 mr-4">
+                            <DropdownMenuLabel className="text-muted-foreground select-none">My Account</DropdownMenuLabel>
+                            <DropdownMenuSeparator className="bg-gray-800" />
                             <DropdownMenuGroup>
                                 <Link href="/my-profile">
                                     <DropdownMenuItem>
@@ -57,8 +57,8 @@ const Header = ({ session }: { session: Session }) => {
                                         Contact Us
                                     </DropdownMenuItem>
                                 </Link>
-                                <DropdownMenuSeparator className="bg-muted-foreground" />
-                                <DropdownMenuItem>
+                                <DropdownMenuSeparator className="bg-gray-800 " />
+                                <DropdownMenuItem asChild>
                                     <form
                                         action={logoutAction}
                                         className="w-full"
