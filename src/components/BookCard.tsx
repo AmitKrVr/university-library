@@ -4,9 +4,13 @@ import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { Button } from "./ui/button"
 
+interface Props extends Book {
+    isLoanedBook: boolean;
+}
+
 const BookCard = ({
     id, title, genre, coverColor, coverUrl, isLoanedBook = false
-}: Book) => (
+}: Props) => (
     <li className={cn(isLoanedBook && 'xs:w-52 w-full')}>
         <Link href={`/books/${id}`} className={cn(isLoanedBook && 'w-full flex flex-col items-center')}>
             <BookCover coverColor={coverColor} coverImage={coverUrl} />

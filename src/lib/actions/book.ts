@@ -2,8 +2,14 @@
 
 import { db } from "@/database/drizzle";
 import { books, borrowRecords } from "@/database/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import dayjs from "dayjs"
+import redis from "@/database/redis";
+
+type GetBooksResponse =
+    | { success: true; data: Book[] }
+    | { success: false; message: string };
+
 
 export const borrowBook = async (params: BorrowBookParams) => {
     const { userId, bookId } = params;
@@ -43,6 +49,110 @@ export const borrowBook = async (params: BorrowBookParams) => {
         return {
             success: false,
             message: "An error occurred while borrowing the book"
+        }
+    }
+}
+
+export const getBooks = async (page = 1, limit = 12): Promise<GetBooksResponse> => {
+    try {
+        const offset = (page - 1) * limit;
+
+        if (page === 1) {
+            const cacheKey = "all_books_first_page";
+            const cached = await redis.get(cacheKey);
+            if (cached) {
+                return {
+                    success: true,
+                    data: cached as Book[],
+                };
+            }
+
+            const data = await db
+                .select()
+                .from(books)
+                .limit(limit)
+                .offset(offset);
+
+            await redis.set(cacheKey, data, { ex: 86400 }); // Cache for 1 day
+
+            return {
+                success: true,
+                data: data,
+            };
+        }
+
+        const data = await db
+            .select()
+            .from(books)
+            .limit(limit)
+            .offset(offset);
+
+        return {
+            success: true,
+            data: data,
+        };
+
+    } catch (error) {
+        console.error("Error fetching books:", error)
+        return {
+            success: false,
+            message: "Failed to fetch books",
+        };
+    }
+};
+
+export const getBooksCount = async () => {
+    try {
+        const cacheKey = "total_books_count";
+
+        const cached = await redis.get<number>(cacheKey);
+        if (cached !== null) {
+            return {
+                success: true,
+                data: cached,
+            }
+        }
+
+        const result = await db.select({ count: sql<number>`count(*)` }).from(books);
+        const count = result[0]?.count ?? 0;
+        await redis.set(cacheKey, count, { ex: 86400 });
+
+        return {
+            success: true,
+            data: count,
+        }
+    } catch (error) {
+        console.error(error)
+        return {
+            success: false,
+            message: "Failed to fetch book count",
+        }
+    }
+};
+
+export const getBookDetails = async (id: string): Promise<GetBooksResponse> => {
+    try {
+        const cacheKey = `book-details:${id}`;
+
+        const cached = await redis.get(cacheKey);
+        if (cached !== null) {
+            return {
+                success: true,
+                data: cached as Book[],
+            }
+        }
+
+        const bookDetails = await db.select().from(books).where(eq(books.id, id)).limit(1);
+        await redis.set(cacheKey, bookDetails, { ex: 3600 });
+        return {
+            success: true,
+            data: bookDetails,
+        }
+    } catch (error) {
+        console.error("Error fetching book details:", error);
+        return {
+            success: false,
+            message: "Failed to fetch book details",
         }
     }
 }

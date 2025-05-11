@@ -1,6 +1,6 @@
 "use client"
 
-import { searchBooks, getInitialBooks, countTotalBooks } from "@/lib/actions/searchBooks"
+import { searchBooks, countTotalBooks } from "@/lib/actions/searchBooks"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useCallback, useEffect, useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
@@ -12,6 +12,8 @@ import BookCard from "@/components/BookCard"
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
 import { Button } from "@/components/ui/button"
 import { useRouter, useSearchParams } from "next/navigation"
+import { getBooks, getBooksCount } from "@/lib/actions/book"
+import { toast } from "sonner"
 
 const formSchema = z.object({
     query: z.string().min(2, "Please enter at least 2 characters"),
@@ -35,29 +37,44 @@ const SearchPage = () => {
 
     const currentPage = parseInt(page || "1", 10)
 
-    useEffect(() => {
-        const fetchBooks = async () => {
-            startTransition(async () => {
-                let result = [];
-                let total
-                if (query && query.length >= 2) {
-                    result = await searchBooks(query, currentPage);
-                    total = await countTotalBooks(query)
-                    setHasSearched(true);
-                } else {
 
-                    result = await getInitialBooks(currentPage);
-                    total = await countTotalBooks()
-                    setHasSearched(false);
-                }
+    const fetchAllBooks = async () => {
+        const bookData = await getBooks(currentPage);
+        if (!bookData.success) {
+            toast.error("Error", { description: bookData.message });
+            return;
+        }
+        const total = await getBooksCount();
+        if (!total.success) {
+            toast.error("Error", { description: total.message });
+            return;
+        }
+        setAllBooks(bookData.data);
+        setTotalBooks(total.data ?? 0);
+        setHasSearched(false);
+    };
 
-                setAllBooks(result)
-                setTotalBooks(total)
-            })
+    const fetchSearchResults = async () => {
+        if (query && query.length >= 2) {
+            const result = await searchBooks(query, currentPage);
+            const total = await countTotalBooks(query);
+            setAllBooks(result);
+            setTotalBooks(total);
         }
 
-        fetchBooks()
-    }, [page, query])
+        setHasSearched(true);
+    };
+
+    useEffect(() => {
+        startTransition(() => {
+            if (query && query.length >= 2) {
+                fetchSearchResults();
+            } else {
+                fetchAllBooks();
+            }
+        });
+    }, [page, query, currentPage]);
+
 
     const createQueryString = useCallback(
         (name: string, value: string) => {

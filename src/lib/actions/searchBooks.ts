@@ -2,7 +2,7 @@
 
 import { db } from "@/database/drizzle"
 import { books } from "@/database/schema"
-import { ilike, or } from "drizzle-orm"
+import { ilike, or, sql } from "drizzle-orm"
 
 export async function getInitialBooks(page = 1, limit = 12) {
     const offset = (page - 1) * limit
@@ -10,18 +10,16 @@ export async function getInitialBooks(page = 1, limit = 12) {
 }
 
 export async function countTotalBooks(query?: string) {
-    if (query && query.length >= 2) {
-        const whereClause = or(
-            ilike(books.title, `%${query}%`),
-            ilike(books.author, `%${query}%`),
-            ilike(books.genre, `%${query}%`),
-        )
+    const whereClause = or(
+        ilike(books.title, `%${query}%`),
+        ilike(books.author, `%${query}%`),
+        ilike(books.genre, `%${query}%`),
+    )
 
-        const result = await db.select().from(books).where(whereClause);
-        return result.length;
-    }
-    const allBooks = await db.select().from(books)
-    return allBooks.length;
+    const result = await db.select({ count: sql<number>`count(*)` }).from(books).where(whereClause);
+    const count = result[0]?.count ?? 0;
+    return count;
+
 }
 
 export async function searchBooks(query: string, page = 1, limit = 12) {
@@ -36,8 +34,8 @@ export async function searchBooks(query: string, page = 1, limit = 12) {
     )
 
     const result = await db.select().from(books).where(whereClause).limit(limit).offset(offset);
+    return result;
 
-    return result
 }
 
 
