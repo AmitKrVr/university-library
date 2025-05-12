@@ -5,6 +5,7 @@ import { SessionProvider } from "next-auth/react"
 import "./globals.css";
 import { Toaster } from "sonner";
 import { auth } from "@/auth";
+import { ReactQueryProvider } from "@/lib/react-query/ReactQueryProvider";
 
 const ibmPlexSans = localFont({
   src: [
@@ -38,8 +39,10 @@ const RootLayout = async ({ children, }: { children: ReactNode }) => {
         <body
           className={`${ibmPlexSans.className} ${bebasNeue.variable} antialiased`}
         >
-          {children}
-          <Toaster richColors closeButton />
+          <ReactQueryProvider>
+            {children}
+            <Toaster richColors closeButton />
+          </ReactQueryProvider>
         </body>
       </SessionProvider>
     </html>

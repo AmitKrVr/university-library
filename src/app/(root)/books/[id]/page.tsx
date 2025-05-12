@@ -1,31 +1,47 @@
-import { auth } from "@/auth";
+"use client"
+
 import BookCover from "@/components/BookCover";
 import BookOverview from "@/components/BookOverview";
 import BookVideo from "@/components/BookVideo";
-import { getBookDetails, getBooks } from "@/lib/actions/book";
+import { useBook, useBooks } from "@/hooks/useBook";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { useParams } from "next/navigation";
 import { toast } from "sonner";
 
-const BookDetailsPage = async ({ params }: { params: Promise<{ id: string }> }) => {
-    const { id } = await params;
-    const session = await auth()
+const BookDetailsPage = () => {
+    const { id } = useParams<{ id: string }>()
 
-    const bookDetails = await getBookDetails(id)
-    const allBooks = await getBooks(1)
+    const { data: book,
+        isPending: isBookDetailsPending,
+        isError: isBookDetailsError,
+        error: bookDetailsError } = useBook(id);
 
-    if (!allBooks.success) {
+    const { data: allBooks, isPending, isError, error } = useBooks(1, 12, false)
+
+    if (isBookDetailsPending) {
+        return (
+            <div className="w-full h-[50vh] flex items-center justify-center">
+                <Loader2 className="size-10 text-primary animate-spin" />
+            </div>
+        )
+    }
+
+    if (isError) {
         toast.error("Error", {
-            description: allBooks.message
+            description: error.message,
         })
     }
 
-    if (!bookDetails.success) redirect("/404");
-    const book = bookDetails?.data[0]
+    if (isBookDetailsError) {
+        toast.error("Error", {
+            description: bookDetailsError.message,
+        })
+    }
 
     return (
         <>
-            <BookOverview {...book} userId={session?.user?.id as string} />
+            <BookOverview {...book} />
 
             <div className="book-details">
                 <div className="flex-[1.5]">
@@ -39,7 +55,7 @@ const BookDetailsPage = async ({ params }: { params: Promise<{ id: string }> }) 
                         <h3>Summary</h3>
 
                         <div className="space-y-5 text-xl text-light-100">
-                            {book.summary?.split("\n").map((line, i) => (
+                            {book.summary?.split("\n").map((line: string, i: number) => (
                                 <p key={i}>
                                     {line}
                                 </p>
@@ -53,7 +69,7 @@ const BookDetailsPage = async ({ params }: { params: Promise<{ id: string }> }) 
                         <h3>More similar books</h3>
 
                         <div className="flex flex-wrap gap-7">
-                            {allBooks?.success && allBooks?.data?.slice(1, 7).map((book) => (
+                            {allBooks?.slice(1, 7).map((book: Book) => (
                                 <Link key={book.id} href={`/books/${book.id}`}>
                                     <BookCover
                                         coverColor={book.coverColor}

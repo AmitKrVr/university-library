@@ -1,12 +1,9 @@
-import { auth } from "@/auth";
-import BookList from "@/components/BookList";
 import BookOverview from "@/components/BookOverview";
-import { getBooks } from "@/lib/actions/book";
+import BookList from "@/components/BookList";
 import { toast } from "sonner";
+import { getBooks } from "@/lib/actions/book";
 
 const Home = async () => {
-
-  const session = await auth();
   const result = await getBooks(1, 12)
 
   if (!result.success) {
@@ -17,17 +14,21 @@ const Home = async () => {
 
   const books = result.success ? result.data : [];
 
+  const featuredBook = books[0];
+  const restOfBooks = books.slice(1);
+
   return (
     <>
-      <BookOverview {...books[0]} userId={session?.user?.id as string} />
-
+      {featuredBook && (
+        <BookOverview {...featuredBook} />
+      )}
       <BookList
-        title='Latest Books'
-        books={books.slice(1)}
+        title="Latest Books"
+        books={restOfBooks}
         containerClassName="mt-20"
       />
     </>
-  );
+  )
 }
 
 export default Home;

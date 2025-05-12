@@ -35,7 +35,6 @@ export async function searchBooks(query: string, page = 1, limit = 12) {
 
     const result = await db.select().from(books).where(whereClause).limit(limit).offset(offset);
     return result;
-
 }
 
 

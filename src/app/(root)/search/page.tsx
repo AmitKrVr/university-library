@@ -16,7 +16,7 @@ import { getBooks, getBooksCount } from "@/lib/actions/book"
 import { toast } from "sonner"
 
 const formSchema = z.object({
-    query: z.string().min(2, "Please enter at least 2 characters"),
+    query: z.string().min(2, "Please enter atleast 2 characters")
 })
 
 type FormData = z.infer<typeof formSchema>
@@ -36,7 +36,6 @@ const SearchPage = () => {
     const totalPages = Math.ceil(totalBooks / booksPerPage)
 
     const currentPage = parseInt(page || "1", 10)
-
 
     const fetchAllBooks = async () => {
         const bookData = await getBooks(currentPage);
@@ -88,14 +87,23 @@ const SearchPage = () => {
     const form = useForm<FormData>({
         resolver: zodResolver(formSchema),
         defaultValues: { query: "" },
+        mode: "onChange",
     })
+
+    const queryValue = form.watch("query");
+    const queryError = form.formState.errors.query?.message;
 
     const onSubmit = (data: FormData) => {
         const query = data.query.trim();
 
         const params = new URLSearchParams(searchParams.toString());
 
-        if (query.length > 0) {
+        if (query && query.length < 2) {
+            toast.error("Please enter at least 2 characters")
+            return
+        }
+
+        if (query.length > 1) {
             params.set("query", query);
             params.set("page", "1"); //reset 1 on every search
         } else {
@@ -108,7 +116,7 @@ const SearchPage = () => {
 
     return (
         <div>
-            <section className="flex flex-col items-center text-white sm:py-5 space-y-7">
+            <section className="flex flex-col items-center text-white space-y-7">
                 <div className="text-center space-y-2 max-w-3xl">
                     <h3 className="font-bebas-neue text-xl font-semibold tracking-widest text-light-100">
                         Discover Your Next Great Read:
@@ -124,7 +132,7 @@ const SearchPage = () => {
                             control={form.control}
                             name="query"
                             render={({ field }) => (
-                                <FormItem>
+                                <FormItem className="relative">
                                     <div className="flex gap-2">
                                         <FormControl className="w-full">
                                             <div className="relative">
@@ -141,18 +149,31 @@ const SearchPage = () => {
                                                     placeholder="Search books"
                                                     className="form-input pl-12 text-lg!"
                                                     disabled={isPending}
+                                                    onChange={(e) => {
+                                                        field.onChange(e);
+                                                        const newValue = e.target.value.trim();
+
+                                                        if (newValue.length === 0) {
+                                                            const params = new URLSearchParams(searchParams.toString());
+                                                            params.delete("query");
+                                                            params.set("page", "1");
+                                                            router.push(`/search?${params.toString()}`);
+                                                        }
+                                                    }}
                                                 />
                                             </div>
                                         </FormControl>
                                         <Button
                                             type="submit"
-                                            disabled={isPending}
+                                            disabled={isPending || (queryValue?.trim().length ?? 0) < 2}
                                             className="bg-light-100 text-dark-100 sm:text-lg min-h-14 w-24 min-w-24 md:w-1/5 rounded-md font-medium hover:bg-light-100/80 transition"
                                         >
                                             {isPending ? "Searching..." : "Search"}
                                         </Button>
                                     </div>
-                                    <FormMessage className="text-red-500 -mt-1 text-xs" />
+                                    {(queryValue && queryValue.length < 2 && queryError) && (
+                                        <p className="absolute -bottom-5 text-xs text-red-500 -mt-1">{queryError}</p>
+                                    )}
                                 </FormItem>
                             )}
                         />
@@ -224,8 +245,28 @@ const SearchPage = () => {
                             </>
                         ) : (
                             allBooks.length <= 0 && hasSearched) ? (
-                            <div className="text-3xl text-light-100 font-bold text-center py-10">
-                                No books found matching your search.
+                            <div className="flex items-center justify-center w-full mt-14">
+                                <div className="max-w-96 flex flex-col items-center justify-center gap-3">
+                                    <Image
+                                        alt="no result"
+                                        src="/icons/no-results.svg"
+                                        height={180}
+                                        width={180}
+                                        className="object-contain"
+                                    />
+                                    <h3 className="text-xl text-light-100 font-semibold ">No Results Found</h3>
+                                    <p className="font-normal text-base text-center text-light-100">We couldn’t find any books matching your search. Try using different keywords or check for typos.</p>
+                                    <Button
+                                        onClick={() => {
+                                            form.reset();
+                                            const params = new URLSearchParams(searchParams.toString());
+                                            params.delete("query");
+                                            params.set("page", "1");
+                                            router.push(`/search?${params.toString()}`);
+                                        }}
+                                        className="font-bebas-neue w-full h-11 text-dark-100 text-xl font-normal tracking-wider"
+                                    >Clear search</Button>
+                                </div>
                             </div>
                         ) : ""}
                 </section>

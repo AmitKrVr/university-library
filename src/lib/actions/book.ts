@@ -2,9 +2,10 @@
 
 import { db } from "@/database/drizzle";
 import { books, borrowRecords } from "@/database/schema";
-import { eq, sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import dayjs from "dayjs"
 import redis from "@/database/redis";
+import { getUserById } from "../getUserById";
 
 type GetBooksResponse =
     | { success: true; data: Book[] }
@@ -15,6 +16,15 @@ export const borrowBook = async (params: BorrowBookParams) => {
     const { userId, bookId } = params;
 
     try {
+        const user = await getUserById(userId);
+
+        if (user?.status !== "APPROVED") {
+            return {
+                success: false,
+                message: "You are not eligible to borrow this book"
+            }
+        }
+
         const book = await db
             .select({ availableCopies: books.availableCopies })
             .from(books)
@@ -38,6 +48,9 @@ export const borrowBook = async (params: BorrowBookParams) => {
             .update(books)
             .set({ availableCopies: book[0].availableCopies - 1 })
             .where(eq(books.id, bookId));
+
+        await redis.del(`book-details:${bookId}`)
+        await redis.del("all_books_first_page")
 
         return {
             success: true,
@@ -71,6 +84,7 @@ export const getBooks = async (page = 1, limit = 12): Promise<GetBooksResponse> 
                 .select()
                 .from(books)
                 .limit(limit)
+                .orderBy(desc(books.createdAt))
                 .offset(offset);
 
             await redis.set(cacheKey, data, { ex: 86400 }); // Cache for 1 day

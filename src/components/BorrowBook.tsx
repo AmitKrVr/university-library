@@ -5,19 +5,16 @@ import { Button } from "./ui/button"
 import { usePathname, useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
-import { borrowBook } from "@/lib/actions/book"
 import Link from "next/link"
+import { useBorrowBook } from "@/hooks/useBorrowBook"
 
 interface Props {
-    userId: string,
     bookId: string,
-    borrowingEligibility: {
-        isEligible: boolean,
-        message: string,
-    }
 }
 
-const BorrowBook = ({ userId, bookId, borrowingEligibility: { isEligible, message } }: Props) => {
+const BorrowBook = ({ bookId }: Props) => {
+
+    const borrowMutation = useBorrowBook();
 
     const router = useRouter()
     const [borrowing, setBorrowing] = useState(false)
@@ -33,34 +30,21 @@ const BorrowBook = ({ userId, bookId, borrowingEligibility: { isEligible, messag
     }
 
     const handleBorrow = async () => {
-        if (!isEligible) {
-            toast.error("Error", {
-                description: message
-            })
-        }
-
         setBorrowing(true);
-
-        try {
-            const result = await borrowBook({ bookId, userId });
-            if (result.success) {
-                toast.success("Success", {
-                    description: "Book borrowed successfully",
-                })
-
-                router.push("/my-profile")
-            } else {
-                toast.error("Error", {
-                    description: "An error occurred while borrowing the book",
-                })
-            }
-        } catch (error) {
-            toast.error("Error", {
-                description: "An error occurred while borrowing the book"
-            })
-        } finally {
-            setBorrowing(false)
-        }
+        borrowMutation.mutate(bookId, {
+            onSuccess: () => {
+                toast.success("Book borrowed successfully");
+                router.push("/my-profile");
+            },
+            onError: (error: Error) => {
+                toast.error("Failed to borrow book", {
+                    description: error.message,
+                });
+            },
+            onSettled: () => {
+                setBorrowing(false);
+            },
+        })
     }
     return (
         <Button onClick={handleBorrow} disabled={borrowing} className="book-overview_btn">

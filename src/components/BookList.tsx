@@ -1,3 +1,6 @@
+'use client';
+
+import { useBooks } from "@/hooks/useBook";
 import BookCard from "./BookCard";
 
 interface Props {
@@ -7,14 +10,18 @@ interface Props {
 }
 
 const BookList = ({ title, books, containerClassName }: Props) => {
-    if (books.length < 2) return;
+
+    const { data, isPending, isError, error } = useBooks(1, 12, true, books)
+
+    if (isPending) return;
+
     return (
         <section className={containerClassName}>
             <h2 className="font-bebas-neue text-4xl text-light-100">{title}</h2>
 
             <ul className="book-list">
                 {
-                    books.map((book) => (
+                    data.slice(1).map((book) => (
                         <BookCard
                             key={book.title}
                             {...book}
