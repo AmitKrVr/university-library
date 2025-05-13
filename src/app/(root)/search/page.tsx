@@ -1,19 +1,22 @@
 "use client"
 
-import { searchBooks, countTotalBooks } from "@/lib/actions/searchBooks"
+import { useRouter, useSearchParams } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useCallback, useEffect, useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
 import Image from "next/image"
-import { Input } from "@/components/ui/input"
-import BookCard from "@/components/BookCard"
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
-import { Button } from "@/components/ui/button"
-import { useRouter, useSearchParams } from "next/navigation"
-import { getBooks, getBooksCount } from "@/lib/actions/book"
 import { toast } from "sonner"
+import { useQuery } from "@tanstack/react-query"
+
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import BookCard from "@/components/BookCard"
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
+
+import { getBooks, getBooksCount } from "@/lib/actions/book"
+import { searchBooks, countTotalBooks } from "@/lib/actions/searchBooks"
+import { getPaginationRange } from "@/lib/utils"
 
 const formSchema = z.object({
     query: z.string().min(2, "Please enter atleast 2 characters")
@@ -24,79 +27,78 @@ type FormData = z.infer<typeof formSchema>
 const SearchPage = () => {
     const searchParams = useSearchParams()
     const router = useRouter()
-    const [allBooks, setAllBooks] = useState<any[]>([])
-    const [isPending, startTransition] = useTransition()
-    const [hasSearched, setHasSearched] = useState(false)
 
-    const [totalBooks, setTotalBooks] = useState(0)
-    const booksPerPage = 12;
+    const currentParams = new URLSearchParams(searchParams.toString());
 
-    const query = searchParams.get("query");
-    const page = searchParams.get("page");
-    const totalPages = Math.ceil(totalBooks / booksPerPage)
+    const query = searchParams.get("query") || ""
+    const page = parseInt(searchParams.get("page") || "1", 10)
+    const booksPerPage = 12
 
-    const currentPage = parseInt(page || "1", 10)
+    const updatePage = (pageNumber: number) => {
+        currentParams.set("page", String(pageNumber));
+        router.push(`/search?${currentParams.toString()}`);
+    }
 
-    const fetchAllBooks = async () => {
-        const bookData = await getBooks(currentPage);
-        if (!bookData.success) {
-            toast.error("Error", { description: bookData.message });
-            return;
-        }
-        const total = await getBooksCount();
-        if (!total.success) {
-            toast.error("Error", { description: total.message });
-            return;
-        }
-        setAllBooks(bookData.data);
-        setTotalBooks(total.data ?? 0);
-        setHasSearched(false);
-    };
-
-    const fetchSearchResults = async () => {
-        if (query && query.length >= 2) {
-            const result = await searchBooks(query, currentPage);
-            const total = await countTotalBooks(query);
-            setAllBooks(result);
-            setTotalBooks(total);
-        }
-
-        setHasSearched(true);
-    };
-
-    useEffect(() => {
-        startTransition(() => {
+    const {
+        data: booksData = [],
+        isLoading: isLoadingBooks,
+        isError: isBooksError,
+        error: booksError,
+    } = useQuery({
+        queryKey: ['books', query, page],
+        queryFn: async () => {
             if (query && query.length >= 2) {
-                fetchSearchResults();
-            } else {
-                fetchAllBooks();
+                return await searchBooks(query, page)
             }
-        });
-    }, [page, query, currentPage]);
 
-
-    const createQueryString = useCallback(
-        (name: string, value: string) => {
-            const params = new URLSearchParams(searchParams.toString())
-            params.set(name, value)
-            return params.toString()
+            const result = await getBooks(page)
+            return result.success ? result.data : []
         },
-        [searchParams]
-    )
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        retry: 1,
+    })
+
+    const {
+        data: totalBooksCount = 0,
+        isLoading: isLoadingCount,
+        isError: isCountError,
+        error: countError
+    } = useQuery({
+        queryKey: ['booksCount', query],
+        queryFn: async () => {
+            if (query && query.length >= 2) {
+                return await countTotalBooks(query)
+            }
+            const result = await getBooksCount()
+            return result.success ? result.data : 0
+        },
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        retry: 1
+    })
+
+    const hasSearched = query.length >= 2
+    const totalPages = Math.ceil(totalBooksCount / booksPerPage)
+    const isLoading = isLoadingBooks || isLoadingCount
+    const hasError = isBooksError || isCountError
+
+
+    if (hasError) {
+        const errorMessage = booksError?.message || countError?.message || "An error occurred while fetching data"
+        toast.error("Error", { description: errorMessage })
+    }
 
     const form = useForm<FormData>({
         resolver: zodResolver(formSchema),
-        defaultValues: { query: "" },
+        defaultValues: { query: query || "" },
         mode: "onChange",
     })
 
-    const queryValue = form.watch("query");
-    const queryError = form.formState.errors.query?.message;
+    const queryValue = form.watch("query")
+    const queryError = form.formState.errors.query?.message
 
     const onSubmit = (data: FormData) => {
-        const query = data.query.trim();
-
-        const params = new URLSearchParams(searchParams.toString());
+        const query = data.query.trim()
+        const params = new URLSearchParams(searchParams.toString())
 
         if (query && query.length < 2) {
             toast.error("Please enter at least 2 characters")
@@ -104,15 +106,25 @@ const SearchPage = () => {
         }
 
         if (query.length > 1) {
-            params.set("query", query);
-            params.set("page", "1"); //reset 1 on every search
+            params.set("query", query)
+            params.set("page", "1") // Reset to page 1 on every search
         } else {
-            params.delete("query");
-            params.set("page", "1");
+            params.delete("query")
+            params.set("page", "1")
         }
 
         router.push(`/search?${params.toString()}`)
     }
+
+    const clearSearch = () => {
+        form.reset()
+        const params = new URLSearchParams(searchParams.toString())
+        params.delete("query")
+        params.set("page", "1")
+        router.push(`/search?${params.toString()}`)
+    }
+
+    const paginationRange = getPaginationRange(page, totalPages);
 
     return (
         <div>
@@ -148,16 +160,16 @@ const SearchPage = () => {
                                                     type="text"
                                                     placeholder="Search books"
                                                     className="form-input pl-12 text-lg!"
-                                                    disabled={isPending}
+                                                    disabled={isLoading}
                                                     onChange={(e) => {
-                                                        field.onChange(e);
-                                                        const newValue = e.target.value.trim();
+                                                        field.onChange(e)
+                                                        const newValue = e.target.value.trim()
 
                                                         if (newValue.length === 0) {
-                                                            const params = new URLSearchParams(searchParams.toString());
-                                                            params.delete("query");
-                                                            params.set("page", "1");
-                                                            router.push(`/search?${params.toString()}`);
+                                                            const params = new URLSearchParams(searchParams.toString())
+                                                            params.delete("query")
+                                                            params.set("page", "1")
+                                                            router.push(`/search?${params.toString()}`)
                                                         }
                                                     }}
                                                 />
@@ -165,10 +177,10 @@ const SearchPage = () => {
                                         </FormControl>
                                         <Button
                                             type="submit"
-                                            disabled={isPending || (queryValue?.trim().length ?? 0) < 2}
+                                            disabled={isLoading || (queryValue?.trim().length ?? 0) < 2}
                                             className="bg-light-100 text-dark-100 sm:text-lg min-h-14 w-24 min-w-24 md:w-1/5 rounded-md font-medium hover:bg-light-100/80 transition"
                                         >
-                                            {isPending ? "Searching..." : "Search"}
+                                            {isLoading ? "Searching..." : "Search"}
                                         </Button>
                                     </div>
                                     {(queryValue && queryValue.length < 2 && queryError) && (
@@ -185,90 +197,85 @@ const SearchPage = () => {
                         <h2 className="text-3xl font-semibold text-light-100">
                             {hasSearched ? "Search Results" : "All Books"}
                         </h2>
-
-                        {/* <div className="flex flex-wrap gap-3 items-center">
-                                <Select>
-                                    <SelectTrigger className="w-40 min-h-12 bg-dark-700 text-white">
-                                        <SelectValue placeholder="Filter by:" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectLabel>Filter by:</SelectLabel>
-                                            <SelectItem value="author">Author</SelectItem>
-                                            <SelectItem value="genre">Genre</SelectItem>
-                                            <SelectItem value="rating">Rating</SelectItem>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                            </div> */}
                     </div>
 
-                    {allBooks.length > 0
-                        ? (
-                            <>
-                                <ul className="book-list mt-8 flex flex-wrap">
-                                    {allBooks.map((book) => (
-                                        <BookCard key={book.id} {...book} />
-                                    ))}
-                                </ul>
-
-                                {totalPages > 1 && (
-                                    <Pagination className="flex justify-end mt-10">
-                                        <PaginationContent className="flex flow-row gap-3">
-                                            <PaginationItem>
-                                                <PaginationPrevious
-                                                    href={parseInt(page || "1") > 1 ? `/search?${createQueryString("page", String(Math.max(1, parseInt(page || "1") - 1)))}` : undefined}
-                                                    aria-disabled={parseInt(page || "1") <= 1}
-                                                    className={parseInt(page || "1") <= 1 ? "pointer-events-none opacity-50" : ""}
-                                                />
-                                            </PaginationItem>
-                                            {Array.from({ length: totalPages }, (_, i) => (
-                                                <PaginationItem key={i}>
-                                                    <PaginationLink href={`/search?${createQueryString("page", String(i + 1))}`}
-                                                        isActive={page === String(i + 1)}
-                                                        className={`${page === String(i + 1) ? "text-dark-100" : ""}`}
-                                                    >
-                                                        {i + 1}
-                                                    </PaginationLink>
-                                                </PaginationItem>
-                                            ))}
-                                            <PaginationItem>
-                                                <PaginationNext
-                                                    href={parseInt(page || "1") < totalPages ? `/search?${createQueryString("page", String(Math.min(totalPages, parseInt(page || "1") + 1)))}` : undefined}
-                                                    aria-disabled={parseInt(page || "1") >= totalPages}
-                                                    className={parseInt(page || "1") >= totalPages ? "pointer-events-none opacity-50" : ""}
-                                                />
-                                            </PaginationItem>
-                                        </PaginationContent>
-                                    </Pagination>
-                                )}
-                            </>
-                        ) : (
-                            allBooks.length <= 0 && hasSearched) ? (
-                            <div className="flex items-center justify-center w-full mt-14">
-                                <div className="max-w-96 flex flex-col items-center justify-center gap-3">
-                                    <Image
-                                        alt="no result"
-                                        src="/icons/no-results.svg"
-                                        height={180}
-                                        width={180}
-                                        className="object-contain"
-                                    />
-                                    <h3 className="text-xl text-light-100 font-semibold ">No Results Found</h3>
-                                    <p className="font-normal text-base text-center text-light-100">We couldn’t find any books matching your search. Try using different keywords or check for typos.</p>
-                                    <Button
-                                        onClick={() => {
-                                            form.reset();
-                                            const params = new URLSearchParams(searchParams.toString());
-                                            params.delete("query");
-                                            params.set("page", "1");
-                                            router.push(`/search?${params.toString()}`);
-                                        }}
-                                        className="font-bebas-neue w-full h-11 text-dark-100 text-xl font-normal tracking-wider"
-                                    >Clear search</Button>
-                                </div>
+                    {isLoadingBooks ? (
+                        <div className="flex items-center justify-center w-full mt-14">
+                            <div className="flex flex-col items-center justify-center gap-3">
+                                <p className="text-light-100">Loading books...</p>
                             </div>
-                        ) : ""}
+                        </div>
+                    ) : booksData.length > 0 ? (
+                        <>
+                            <ul className="book-list mt-8 flex flex-wrap">
+                                {booksData.map((book) => (
+                                    <BookCard key={book.id} {...book} />
+                                ))}
+                            </ul>
+
+                            {totalPages > 1 && (
+                                <Pagination className="flex justify-end mt-10">
+                                    <PaginationContent className="flex flow-row gap-3">
+                                        <PaginationItem>
+                                            <PaginationPrevious
+                                                onClick={() => {
+                                                    if (page > 1) updatePage(page - 1);
+                                                }}
+                                                aria-disabled={page <= 1}
+                                                className={page <= 1 ? "pointer-events-none opacity-50" : ""}
+                                            />
+                                        </PaginationItem>
+                                        {paginationRange.map((item, idx) => (
+                                            <PaginationItem key={idx}>
+                                                {item === "..." ? (
+                                                    <PaginationEllipsis />
+                                                ) : (
+                                                    <PaginationLink
+                                                        onClick={() => updatePage(Number(item))}
+                                                        isActive={page === item}
+                                                        className={`${page === idx + 1 ? "text-dark-100 bg-primary" : ""}`}
+                                                    >
+                                                        {item}
+                                                    </PaginationLink>
+                                                )}
+                                            </PaginationItem>
+                                        ))}
+                                        <PaginationItem>
+                                            <PaginationNext
+                                                onClick={() => {
+                                                    if (page < totalPages) updatePage(page + 1);
+                                                }}
+                                                aria-disabled={page >= totalPages}
+                                                className={`${page >= totalPages ? "pointer-events-none opacity-50" : ""} `}
+                                            />
+                                        </PaginationItem>
+                                    </PaginationContent>
+                                </Pagination>
+                            )}
+                        </>
+                    ) : (hasSearched ? (
+                        <div className="flex items-center justify-center w-full mt-14">
+                            <div className="max-w-96 flex flex-col items-center justify-center gap-3">
+                                <Image
+                                    alt="no result"
+                                    src="/icons/no-results.svg"
+                                    height={180}
+                                    width={180}
+                                    className="object-contain"
+                                />
+                                <h3 className="text-xl text-light-100 font-semibold">No Results Found</h3>
+                                <p className="font-normal text-base text-center text-light-100">We couldn&apos;t find any books matching your search. Try using different keywords or check for typos.</p>
+                                <Button
+                                    onClick={clearSearch}
+                                    className="font-bebas-neue w-full h-11 text-dark-100 text-xl font-normal tracking-wider"
+                                >Clear search</Button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-center w-full mt-14">
+                            <p className="text-light-100">No books available.</p>
+                        </div>
+                    ))}
                 </section>
             </section>
         </div>

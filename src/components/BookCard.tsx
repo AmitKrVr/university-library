@@ -5,7 +5,7 @@ import Image from "next/image"
 import { Button } from "./ui/button"
 
 interface Props extends Book {
-    isLoanedBook: boolean;
+    isLoanedBook?: boolean;
 }
 
 const BookCard = ({
