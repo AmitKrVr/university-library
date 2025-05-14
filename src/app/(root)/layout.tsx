@@ -32,11 +32,9 @@ const Layout = async ({ children }: { children: ReactNode }) => {
 
     return (
         <main className="root-container">
-            <div className="">
-                <Header session={session} />
+            <Header session={session} />
 
-                <div className="mt-14 md:mt-20 pb-20">{children}</div>
-            </div>
+            <div className="mt-14 md:mt-10 pb-20 px-5 xs:px-10 md:px-16">{children}</div>
         </main>
     )
 }

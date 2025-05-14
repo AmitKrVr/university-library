@@ -44,3 +44,42 @@ export function getPaginationRange(current: number, total: number, siblingCount 
 
   return [];
 }
+
+
+export const getBorrowStatus = (dueDateStr: string) => {
+  const today = new Date();
+  const dueDate = new Date(dueDateStr);
+
+  const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const dueDateOnly = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+
+  const diffInDays =
+    (dueDateOnly.getTime() - todayDateOnly.getTime()) / (1000 * 60 * 60 * 24);
+
+  if (diffInDays < 0) {
+    return {
+      message: `Overdue by ${Math.abs(diffInDays)} day${Math.abs(diffInDays) > 1 ? "s" : ""}`,
+      isOverdue: true,
+    };
+  }
+
+  return {
+    message: `${diffInDays} day${diffInDays > 1 ? "s" : ""} left until due`,
+    isOverdue: false,
+  };
+};
+
+
+//Jan 20
+export const getMonthAndDay = (borrow_date: Date) => {
+
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  const borrowDate = new Date(borrow_date);
+  const formattedBorrowDate = `${monthNames[borrowDate.getMonth()]} ${borrowDate.getDate()}`;
+
+  return formattedBorrowDate
+}
+
+

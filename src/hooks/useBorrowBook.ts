@@ -17,6 +17,7 @@ export function useBorrowBook() {
         onSuccess: (data, variables) => {
             queryClient.invalidateQueries({ queryKey: ["books"] });
             queryClient.invalidateQueries({ queryKey: ["book", variables] });
+            queryClient.invalidateQueries({ queryKey: ["user-profile"] });
 
             queryClient.setQueryData(['book', variables], (oldData: any) => {
                 if (oldData) {
