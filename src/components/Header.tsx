@@ -31,9 +31,11 @@ const Header = ({ session }: { session: Session }) => {
                 isScrolled ? "backdrop-blur-sm bg-dark-300/70" : ""
             )}
         >
-            <Link href="/" className="select-none flex items-center gap-2">
-                <Image src="/icons/logo.svg" alt="logo" width={40} height={40} />
-                <span className="hidden md:block text-3xl font-semibold text-light-100">BookWise</span>
+            <Link href="/" className="select-none">
+                <div className="flex items-center gap-2">
+                    <Image src="/icons/logo.svg" alt="logo" width={40} height={40} />
+                    <span className="hidden md:block text-3xl font-semibold text-light-100">BookWise</span>
+                </div>
             </Link>
 
             <ul className="flex flex-row items-center gap-8">

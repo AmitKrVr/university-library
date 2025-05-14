@@ -74,7 +74,7 @@ const ProfilePage = () => {
                             height={300}
                             width={400}
                             className="object-cover w-full h-auto max-h-[300px] rounded-2xl"
-                            src={user.universityCard}
+                            src={user.universityCard || ""}
                         />
                     </div>
 

@@ -21,8 +21,6 @@ const AdminLayout = async ({ children }: { children: ReactNode }) => {
 
     if (!isAdmin) redirect("/");
 
-    console.log("AdminLayout rendered for user:", session?.user?.id)
-
     return (
         <main className="flex min-h-screen w-full flex-row">
             <Sidebar session={session} />
