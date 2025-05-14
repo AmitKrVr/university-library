@@ -32,7 +32,15 @@ const FileUpload = ({ type,
     const abortController = new AbortController();
 
     const [progress, setProgress] = useState(0);
-    const [file, setFile] = useState<any>(value);
+
+    const isFullUrl = value?.startsWith("http");
+    const [file, setFile] = useState<any>(
+        value
+            ? isFullUrl
+                ? { url: value, filePath: value }
+                : { url: `${urlEndpoint}${value.startsWith("/") ? "" : "/"}${value}`, filePath: value }
+            : null
+    );
 
     const [uploading, setUploading] = useState(false);
 
@@ -187,11 +195,11 @@ const FileUpload = ({ type,
                 {file && (
                     (type === "image" ? (
                         <IKImage
-                            src={file.url}
+                            src={file.filePath}
                             width={500}
                             height={500}
                             alt="Picture of the author"
-                            className="w-full h-auto rounded border mt-4"
+                            className="w-full h-96 rounded border mt-4"
                         />
                     ) : (type === "video" ? (
                         <Video

@@ -81,5 +81,15 @@ export const getMonthAndDay = (borrow_date: Date) => {
 
   return formattedBorrowDate
 }
+export const getMonthAndDayAndYear = (date: Date) => {
+
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  const newDate = new Date(date);
+  const formattedBorrowDate = `${monthNames[newDate.getMonth()]} ${newDate.getDate()} ${newDate.getFullYear()}`;
+
+  return formattedBorrowDate
+}
 
 

@@ -14,7 +14,7 @@ import { bookSchema } from "@/lib/validations";
 import { Textarea } from "@/components/ui/textarea";
 import FileUpload from "@/components/FileUpload";
 import ColorPicker from "../ColorPicker";
-import { createBook } from "@/lib/admin/actions/book";
+import { createBook, updateBook } from "@/lib/admin/actions/book";
 
 interface Props extends Partial<Book> {
     type?: "create" | "update"
@@ -27,29 +27,38 @@ const BookForm = ({ type, ...book }: Props) => {
     const form: UseFormReturn<z.infer<typeof bookSchema>> = useForm({
         resolver: zodResolver(bookSchema),
         defaultValues: {
-            title: "",
-            description: "",
-            author: "",
-            genre: "",
-            rating: 1,
-            totalCopies: 1,
-            coverUrl: "",
-            coverColor: "",
-            videoUrl: "",
-            summary: "",
+            title: book.title || "",
+            description: book.description || "",
+            author: book.author || "",
+            genre: book.genre || "",
+            rating: book.rating || 1,
+            totalCopies: book.totalCopies || 1,
+            coverUrl: book.coverUrl || "",
+            coverColor: book.coverColor || "",
+            videoUrl: book.videoUrl || "",
+            summary: book.summary || "",
         }
     })
 
     const onSubmit = async (values: z.infer<typeof bookSchema>) => {
         setLoading(true)
 
-        const result = await createBook(values);
+        const result = type === "update"
+            ? await updateBook({ ...values, id: book.id! })
+            : await createBook(values);
 
         if (result.success) {
-            toast.success("Success", {
-                description: "Book created successfully!"
-            })
-            router.push(`/admin/books/${result.data.id}`);
+            if (type === "update") {
+                toast.success("Success", {
+                    description: "Book updated successfully!"
+                })
+            } else {
+                toast.success("Success", {
+                    description: "Book created successfully!"
+                })
+            }
+
+            router.push(`/books/${result.data.id}`);
         } else {
             toast.error(`Error}`, {
                 description: `An error occurred ${result.message}`
