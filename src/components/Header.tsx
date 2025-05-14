@@ -61,7 +61,7 @@ const Header = ({ session }: { session: Session }) => {
                             </Avatar>
                         </DropdownMenuTrigger>
 
-                        <DropdownMenuContent className="w-56 bg-dark-500 text-white border-gray-800 mr-4">
+                        <DropdownMenuContent className="w-56 gradient-blue text-white border-gray-800 mr-4">
                             <DropdownMenuLabel className="text-muted-foreground select-none">My Account</DropdownMenuLabel>
                             <DropdownMenuSeparator className="bg-gray-800" />
                             <DropdownMenuGroup>

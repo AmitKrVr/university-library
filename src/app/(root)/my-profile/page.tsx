@@ -8,7 +8,6 @@ import { Image as IKImage } from "@imagekit/next"
 import config from "@/lib/config"
 import BorrowedBooks from "./BorrowedBooks"
 import { useUserProfile } from "@/hooks/useUserProfile"
-import { Skeleton } from "@/components/ui/skeleton"
 
 const ProfilePage = () => {
     const { data, isLoading, isError } = useUserProfile()
