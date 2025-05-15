@@ -8,13 +8,10 @@ import { users } from "@/database/schema"
 import config from "@/lib/config"
 import { getColorForUser, getInitials, getMonthAndDayAndYear } from "@/lib/utils"
 import { eq, asc, desc } from "drizzle-orm"
-import { unstable_noStore } from "next/cache"
 import Image from "next/image"
 import Link from "next/link"
 
 const page = async ({ searchParams }: { searchParams: Promise<{ sort: string }> }) => {
-    unstable_noStore(); // <-- disables caching
-
     const { sort: rawSort = 'recent' } = await searchParams;
     const sort = ['oldest', 'recent'].includes(rawSort) ? rawSort : 'recent';
     const sortOrder = sort === 'oldest' ? 'asc' : 'desc';
