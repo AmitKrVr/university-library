@@ -18,8 +18,6 @@ export const createBook = async (params: BookParams) => {
             data: JSON.parse(JSON.stringify(newBook[0]))
         }
     } catch (error) {
-        console.error(error)
-
         return {
             success: false,
             message: "An error occurred while creating the book"
@@ -55,9 +53,14 @@ export const updateBook = async (book: { id: string } & Partial<typeof books.$in
 export async function deleteBook(bookId: string) {
     try {
         await db.delete(books).where(eq(books.id, bookId));
-        return { success: true };
+        return {
+            success: true,
+            message: "Book deleted successfully"
+        };
     } catch (err) {
-        console.error("Delete failed:", err);
-        return { success: false, error: "Failed to delete book." };
+        return {
+            success: false,
+            message: "Failed to delete book."
+        };
     }
 }

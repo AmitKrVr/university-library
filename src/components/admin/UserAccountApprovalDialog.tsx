@@ -1,11 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog"
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog"
 import { Button } from "../ui/button"
 import { useRouter } from "next/navigation"
 import { approvedUser } from "@/lib/admin/actions/user"
 import { toast } from "sonner"
+import Image from "next/image"
 
 const UserAccountApprovalDialog = ({ userId }: { userId: string }) => {
     const router = useRouter()
@@ -50,30 +51,59 @@ const UserAccountApprovalDialog = ({ userId }: { userId: string }) => {
         >
 
             <AlertDialogTrigger asChild>
-                <Button className="bg-green-200 text-green font-semibold hover:bg-green-200 cursor-pointer">
+                <Button className="bg-green-100 text-green font-semibold hover:bg-green-200/50 cursor-pointer">
                     Approve Account
                 </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete your
-                        account and remove your data from our servers.
+            <AlertDialogContent className="w-md rounded-xl text-center">
 
-                        {error && (
-                            <div className="mt-2 p-2 bg-red-50 text-red-700 rounded-md text-sm">
-                                Error: {error}
-                            </div>
-                        )}
-                    </AlertDialogDescription>
+                <Button variant="ghost"
+                    onClick={() => setOpen(false)}
+                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                >
+                    <Image
+                        alt="close"
+                        src="/icons/admin/close.svg"
+                        height={15}
+                        width={15}
+                    />
+                </Button>
+
+                <div className="mx-auto mb-4 mt-2 size-16 rounded-full bg-green-400 border-[10px] border-green-100 flex items-center justify-center">
+                    <Image
+                        alt="warning"
+                        src="/icons/admin/tick.svg"
+                        width={20}
+                        height={20} />
+                </div>
+
+                <AlertDialogHeader>
+                    <AlertDialogTitle className="text-lg font-semibold text-gray-900 text-center">
+                        Approved Account Request
+                    </AlertDialogTitle>
                 </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction disabled={isApproving} onClick={handleAccountApproving} className="bg-green-200 text-green font-semibold hover:bg-green-200">
-                        {isApproving ? "Approving..." : "Approve user"}
+
+                <AlertDialogDescription className="text-sm text-gray-600 mb-4 px-4">
+                    Approve the student’s account request and grant access. A confirmation email will be sent upon approval.
+                </AlertDialogDescription>
+
+                {error && (
+                    <div className="mb-4 px-4 text-sm text-red-700 bg-red-50 rounded-md">
+                        Error: {error}
+                    </div>
+                )}
+
+                <AlertDialogFooter className="flex flex-col gap-2">
+                    <AlertDialogAction
+                        disabled={isApproving}
+                        onClick={handleAccountApproving}
+                        className="bg-green-400 hover:bg-green-400 text-white font-medium w-full py-2 rounded-lg"
+                    >
+                        {isApproving ? "Approving..." : "Approve & Send Confirmation"}
                     </AlertDialogAction>
                 </AlertDialogFooter>
+
+
             </AlertDialogContent>
         </AlertDialog>
     )

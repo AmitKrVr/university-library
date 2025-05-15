@@ -7,11 +7,12 @@ import {
 import { db } from "@/database/drizzle";
 import { books } from "@/database/schema";
 import { getMonthAndDayAndYear } from "@/lib/utils";
+import { desc } from "drizzle-orm";
 import Image from "next/image";
 import Link from "next/link";
 
 const BooksPage = async () => {
-    const allBooks = await db.select().from(books).limit(12);
+    const allBooks = await db.select().from(books).limit(12).orderBy(desc(books.createdAt));
 
     return (
         <section className="w-full rounded-2xl bg-white p-7">

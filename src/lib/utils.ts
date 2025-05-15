@@ -93,3 +93,26 @@ export const getMonthAndDayAndYear = (date: Date) => {
 }
 
 
+
+const fallbackColors = [
+  "bg-amber-100",
+  "bg-red-100",
+  "bg-green-100",
+  "bg-blue-100",
+  "bg-purple-100",
+  "bg-pink-100",
+  "bg-teal-100",
+  "bg-yellow-100",
+];
+
+export const getColorForUser = (key: string) => {
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = key.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % fallbackColors.length;
+  return fallbackColors[index];
+};
+
+
+

@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { db } from "@/database/drizzle"
 import { users } from "@/database/schema"
 import config from "@/lib/config"
-import { getInitials, getMonthAndDayAndYear } from "@/lib/utils"
+import { getColorForUser, getInitials, getMonthAndDayAndYear } from "@/lib/utils"
 import { eq, asc, desc } from "drizzle-orm"
 import { unstable_noStore } from "next/cache"
 import Image from "next/image"
@@ -79,7 +79,7 @@ const page = async ({ searchParams }: { searchParams: Promise<{ sort: string }> 
                                     <TableRow key={user.id} className="h-14 border-gray-50">
                                         <TableCell className="flex items-center gap-2 min-w-max">
                                             <Avatar className="h-9 w-9">
-                                                <AvatarFallback className="bg-amber-100 font-medium">
+                                                <AvatarFallback className={`${getColorForUser(user.email || user.id)} font-medium`}>
                                                     {getInitials(user?.fullName || "XX")}
                                                 </AvatarFallback>
                                             </Avatar>

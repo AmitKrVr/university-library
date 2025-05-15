@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { deleteUser } from "@/lib/admin/actions/deleteUser";
 import { Button } from "../ui/button";
-import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 
 export function DeleteUserDialog({ userId }: { userId: string }) {
     const router = useRouter();
@@ -54,29 +54,52 @@ export function DeleteUserDialog({ userId }: { userId: string }) {
                     />
                 </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
+
+            <AlertDialogContent className="w-md rounded-xl text-center">
+                <Button variant="ghost"
+                    onClick={() => setOpen(false)}
+                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                >
+                    <Image
+                        alt="close"
+                        src="/icons/admin/close.svg"
+                        height={15}
+                        width={15}
+                    />
+                </Button>
+
+                <div className="mx-auto mb-4 mt-2 size-16 rounded-full bg-red-400 border-[10px] border-red-100 flex items-center justify-center">
+                    <Image
+                        alt="warning"
+                        src="/icons/admin/circle-help.svg"
+                        width={20}
+                        height={20} />
+                </div>
+
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription asChild>
-                        <div>
-                            This action cannot be undone. This will permanently delete the user account and remove user data from your database.
-                            {error && (
-                                <div className="mt-2 p-2 bg-red-50 text-red-700 rounded-md text-sm">
-                                    Error: {error}
-                                </div>
-                            )}
-                        </div>
-                    </AlertDialogDescription>
+                    <AlertDialogTitle className="text-lg font-semibold text-gray-900 text-center">
+                        Delete User Account
+                    </AlertDialogTitle>
                 </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isDeleting} className="h-10">Cancel</AlertDialogCancel>
-                    <Button
-                        onClick={handleDeleteUser}
+
+                <AlertDialogDescription className="text-sm text-gray-600 mb-4 px-4">
+                    This action will permanently delete the user account and remove all associated data from the system. This action cannot be undone.
+                </AlertDialogDescription>
+
+                {error && (
+                    <div className="mb-4 px-4 text-sm text-red-700 bg-red-50 rounded-md">
+                        Error: {error}
+                    </div>
+                )}
+
+                <AlertDialogFooter className="flex flex-col gap-2">
+                    <AlertDialogAction
                         disabled={isDeleting}
-                        className="inline-flex h-10 items-center justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                        onClick={handleDeleteUser}
+                        className="bg-red-400 hover:bg-red-600/70 text-white font-medium w-full py-2 rounded-lg"
                     >
-                        {isDeleting ? "Deleting..." : "Delete User"}
-                    </Button>
+                        {isDeleting ? "Deleting..." : "Delete"}
+                    </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

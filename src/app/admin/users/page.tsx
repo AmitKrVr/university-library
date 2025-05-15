@@ -3,7 +3,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { db } from "@/database/drizzle";
 import { borrowRecords, users } from "@/database/schema";
-import { cn, getInitials, getMonthAndDayAndYear } from "@/lib/utils";
+import { cn, getColorForUser, getInitials, getMonthAndDayAndYear } from "@/lib/utils";
 import { asc, count, desc, eq } from "drizzle-orm";
 import Image from "next/image";
 import Link from "next/link";
@@ -74,7 +74,7 @@ const UserPage = async ({ searchParams }: { searchParams: Promise<{ sort?: strin
                             <TableRow key={user.id} className="h-14 border-gray-50">
                                 <TableCell className="flex items-center gap-2 min-w-max">
                                     <Avatar className="h-9 w-9">
-                                        <AvatarFallback className="bg-amber-100 font-medium">
+                                        <AvatarFallback className={`${getColorForUser(user.email || user.id)} font-medium`}>
                                             {getInitials(user?.name || "XX")}
                                         </AvatarFallback>
                                     </Avatar>
