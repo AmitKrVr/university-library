@@ -3,12 +3,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { db } from "@/database/drizzle";
 import { borrowRecords, users } from "@/database/schema";
-import { cn, getInitials } from "@/lib/utils";
+import { cn, getInitials, getMonthAndDayAndYear } from "@/lib/utils";
 import { asc, count, desc, eq } from "drizzle-orm";
 import Image from "next/image";
 import Link from "next/link";
 import { DeleteUserDialog } from "@/components/admin/DeleteUserDialog";
 import UserRoleUpdateDialog from "@/components/admin/UserRoleUpdateDialog";
+import config from "@/lib/config";
 
 const UserPage = async ({ searchParams }: { searchParams: Promise<{ sort?: string }> }) => {
 
@@ -82,7 +83,7 @@ const UserPage = async ({ searchParams }: { searchParams: Promise<{ sort?: strin
                                         <p className="text-[#64748B] text-sm">{user.email}</p>
                                     </div>
                                 </TableCell>
-                                <TableCell className="font-medium text-dark-200">{user.dateJoined?.toLocaleDateString()}</TableCell>
+                                <TableCell className="font-medium text-dark-200">{user.dateJoined ? getMonthAndDayAndYear(user.dateJoined) : "--"}</TableCell>
                                 <TableCell
                                     className={cn(user.role === "ADMIN" ? "text-green bg-green-100" : "text-pink-600 bg-pink-100", "flex text-xs font-medium rounded-full py-1 w-max")}
                                 >
@@ -98,7 +99,7 @@ const UserPage = async ({ searchParams }: { searchParams: Promise<{ sort?: strin
                                 <TableCell className="font-medium">{user.borrowedCount}</TableCell>
                                 <TableCell className="font-medium">{user.universityId}</TableCell>
                                 <TableCell className="">
-                                    <Link href={user.universityCard} className="flex items-center gap-1 font-medium text-[#0089F1]">
+                                    <Link target="_blank" href={config.env.imageKit.urlEndpoint + user.universityCard} className="flex items-center gap-1 font-medium text-[#0089F1]">
                                         View ID Card
                                         <Image
                                             alt="view button"
