@@ -100,12 +100,12 @@ const BorrowPage = async ({ searchParams }: { searchParams: Promise<{ sort: stri
                         return (
                             <TableRow key={book.borrowRecord.id} className="h-[5rem] border-gray-50">
                                 <TableCell className="font-medium text-dark-200 max-w-[300px] truncate">
-                                    <div className="flex items-center gap-2 ">
+                                    <Link href={`/admin/borrow-records/${book.borrowRecord.bookId}`} className="flex items-center gap-2 ">
                                         <div>
                                             <BookCover variant="extraSmall" coverColor={book.coverColor ?? ''} coverImage={book.coverImage ?? ''} />
                                         </div>
                                         {book.title}
-                                    </div>
+                                    </Link>
                                 </TableCell>
 
                                 <TableCell className="min-w-max">
