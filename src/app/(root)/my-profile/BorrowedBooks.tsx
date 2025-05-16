@@ -17,7 +17,7 @@ interface Props {
             borrowDate: Date;
             dueDate: string;
             returnDate: string | null;
-            status: "BORROWED" | "RETURNED";
+            status: "BORROWED" | "RETURNED" | "LATERETURN";
             createdAt: Date | null;
         };
         book: Book
@@ -35,7 +35,7 @@ const BorrowedBooks = ({ borrowedWithBooks }: Props) => {
     return (
         <>
             <h2 className="text-2xl font-semibold text-light-100">Borrowed Books</h2>
-            {borrowedWithBooks.length > 1 ? (
+            {borrowedWithBooks.length < 1 ? (
                 <div className="mt-20 text-center text-xl font-semibold text-light-100">
                     <p>You have not borrowed any books yet.</p>
                 </div>
@@ -94,7 +94,7 @@ const BorrowedBooks = ({ borrowedWithBooks }: Props) => {
                                                                 width={15}
 
                                                             />
-                                                            Returned on 5th Jan
+                                                            Returned on {getMonthAndDay(new Date(borrow.returnDate))}
                                                         </p>
                                                     ) : (
                                                         <p className={`flex items-center gap-2 truncate ${status.isOverdue ? "text-red-400" : "text-light-100"}`}>
