@@ -36,6 +36,13 @@
       "when": 1746787251916,
       "tag": "0004_dry_toxin",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1747363175528,
+      "tag": "0005_lyrical_living_lightning",
+      "breakpoints": true
     }
   ]
 }

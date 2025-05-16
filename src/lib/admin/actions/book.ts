@@ -1,7 +1,7 @@
 "use server"
 
 import { db } from "@/database/drizzle"
-import { books } from "@/database/schema"
+import { books, borrowRecords } from "@/database/schema"
 import { eq } from "drizzle-orm";
 
 export const createBook = async (params: BookParams) => {
@@ -61,6 +61,30 @@ export async function deleteBook(bookId: string) {
         return {
             success: false,
             message: "Failed to delete book."
+        };
+    }
+}
+
+export async function borrowStatus(id: string, newStatus: "BORROWED" | "RETURNED" | "LATERETURN") {
+    try {
+        const updateData =
+            newStatus === "RETURNED" || "LATERETURN"
+                ? { status: newStatus, newStatus, returnDate: new Date().toISOString() }
+                : { newStatus };
+
+        await db
+            .update(borrowRecords)
+            .set(updateData)
+            .where(eq(borrowRecords.id, id));
+
+        return {
+            success: true,
+            message: `Book status successfully updated to "${newStatus}".`,
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message: "Failed to update book status. Please try again later.",
         };
     }
 }
