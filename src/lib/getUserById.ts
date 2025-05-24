@@ -9,6 +9,8 @@ export const getUserById = cache(async (userId: string) => {
         id: users.id,
         status: users.status,
         role: users.role,
+        name: users.fullName,
+        email: users.email,
     }).from(users).where(eq(users.id, userId)).limit(1);
 
     return user || null;

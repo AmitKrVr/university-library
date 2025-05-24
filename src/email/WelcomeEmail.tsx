@@ -12,7 +12,7 @@ import {
 } from '@react-email/components';
 import * as React from 'react';
 
-export const WelcomeEmail = ({ fullName }: { fullName: string }) => {
+const WelcomeEmail = ({ fullName }: { fullName: string }) => {
     return (
         <Html>
             <Head />
@@ -54,7 +54,7 @@ export default WelcomeEmail;
 
 const main = {
     backgroundColor: '#0f172a',
-    padding: '20px 10px',
+    padding: '20px 20px',
     borderRadius: '8px',
     width: '480px',
     margin: '0 auto',

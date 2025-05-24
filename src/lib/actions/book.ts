@@ -6,6 +6,10 @@ import { desc, eq, sql } from "drizzle-orm";
 import dayjs from "dayjs"
 import redis from "@/database/redis";
 import { getUserById } from "../getUserById";
+import { resend } from "../email";
+import BookBorrowConfirmation from "@/email/BookBorrowConfirmation";
+import { workflowClient } from "../workflow";
+import config from "../config";
 
 type GetBooksResponse =
     | { success: true; data: Book[] }
@@ -26,7 +30,10 @@ export const borrowBook = async (params: BorrowBookParams) => {
         }
 
         const book = await db
-            .select({ availableCopies: books.availableCopies })
+            .select({
+                bookTitle: books.title,
+                availableCopies: books.availableCopies
+            })
             .from(books)
             .where(eq(books.id, bookId))
             .limit(1);
@@ -38,11 +45,12 @@ export const borrowBook = async (params: BorrowBookParams) => {
             }
         };
 
-        const dueDate = dayjs().add(7, 'day').toDate().toDateString();
+        const dueDate = dayjs().add(7, 'day').toISOString();
 
-        const record = await db
+        const [record] = await db
             .insert(borrowRecords)
-            .values({ userId, bookId, dueDate, status: "BORROWED" });
+            .values({ userId, bookId, dueDate, status: "BORROWED" })
+            .returning();
 
         await db
             .update(books)
@@ -51,6 +59,30 @@ export const borrowBook = async (params: BorrowBookParams) => {
 
         await redis.del(`book-details:${bookId}`)
         await redis.del("all_books_first_page")
+
+        if (user.email) {
+            await resend.emails.send({
+                from: `BookWise <contact@devamit.info>`,
+                to: [user.email],
+                subject: `You have borrowed "${book[0].bookTitle}"`,
+                react: BookBorrowConfirmation({
+                    fullName: user.name,
+                    bookTitle: book[0].bookTitle,
+                    dueDate: record.dueDate,
+                    borrowDate: record.borrowDate
+                })
+            })
+        }
+
+        await workflowClient.trigger({
+            url: `${config.env.prodApiEndpoint}/api/due-reminder`,
+            body: {
+                email: user.email,
+                fullName: user.name,
+                bookTitle: book[0].bookTitle,
+                dueDate: record.dueDate,
+            },
+        });
 
         return {
             success: true,

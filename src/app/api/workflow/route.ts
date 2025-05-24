@@ -1,12 +1,11 @@
-import { Resend } from "resend";
 import { db } from "@/database/drizzle";
 import { users } from "@/database/schema";
-import config from "@/lib/config";
 import { serve } from "@upstash/workflow/nextjs"
 import { eq } from "drizzle-orm";
 import WelcomeEmail from "@/email/WelcomeEmail";
 import WeMissYou from "@/email/WeMissYou";
 import MilestoneEmail from "@/email/MilestoneEmail";
+import { resend } from "@/lib/email";
 
 type UserState = "non-active" | "active";
 
@@ -38,8 +37,6 @@ const getUserState = async (email: string): Promise<UserState> => {
 
     return "active";
 }
-
-const resend = new Resend(config.env.resendToken)
 
 export const { POST } = serve<InitialData>(async (context) => {
     const { email, fullName } = context.requestPayload

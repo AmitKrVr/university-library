@@ -1,3 +1,4 @@
+import { getMonthAndDayAndYear } from '@/lib/utils';
 import {
     Body,
     Button,
@@ -12,11 +13,13 @@ import {
 } from '@react-email/components';
 import * as React from 'react';
 
-const MilestoneEmail = ({ fullName }: { fullName: string }) => {
+const BookBorrowConfirmation = (
+    { fullName, bookTitle, borrowDate, dueDate }: { fullName: string, bookTitle: string, borrowDate: Date, dueDate: string }
+) => {
     return (
         <Html>
             <Head />
-            <Preview>You&apos;ve hit a new milestone with BookWise! 🎉</Preview>
+            <Preview>You’ve Borrowed a Book!</Preview>
             <Body style={main}>
                 <Container style={container}>
                     <Section>
@@ -26,24 +29,24 @@ const MilestoneEmail = ({ fullName }: { fullName: string }) => {
                                 height={30}
                                 width={30}
                                 alt='logo'
+                                style={{ marginRight: 8 }}
                             /> BookWise</Text>
                         <Hr style={hr} />
-                        <Text style={heading}>Congratulations on Reaching a New Milestone!</Text>
-                        <Text style={text}>Hi {fullName},</Text>
-                        <Text style={text}>
-                            Great news! You’ve reached a new milestone in your reading journey with BookWise. 🎉
-                            Whether it’s finishing a challenging book, staying consistent with your reading goals,
-                            or exploring new genres, your dedication inspires us.
-                        </Text>
-                        <Text style={text}>
-                            Keep the momentum going—there are more exciting books and features waiting for you!
-                        </Text>
-                        <Text style={text}>Log in now to discover your next adventure:</Text>
-                        <Button style={button} href="https://bookwise-library-rho.vercel.app/">
-                            Discover New Reads
+                        <Text style={heading}>You’ve Borrowed a Book!</Text>
+                        <Text style={text}>Hi <span style={highLight}>{fullName}</span>,</Text>
+                        <Section>
+                            <Text style={text}>
+                                You’ve successfully borrowed <span style={highLight}>{bookTitle}</span>. Here are the details:
+                            </Text>
+                            <Text>• Borrowed On: <span style={highLight}>{getMonthAndDayAndYear(borrowDate)}</span></Text>
+                            <Text>• Due Date: <span style={highLight}>{dueDate}</span></Text>
+                        </Section>
+                        <Text style={text}>Enjoy your reading, and don’t forget to return the book on time!</Text>
+                        <Button style={button} href="https://bookwise-library-rho.vercel.app/profile">
+                            View Borrowed Books
                         </Button>
                         <Text style={text}>
-                            Keep the pages turning,
+                            Happy reading,
                             <br />
                             The BookWise Team
                         </Text>
@@ -54,7 +57,7 @@ const MilestoneEmail = ({ fullName }: { fullName: string }) => {
     );
 };
 
-export default MilestoneEmail;
+export default BookBorrowConfirmation;
 
 const main = {
     backgroundColor: '#0f172a',
@@ -106,3 +109,8 @@ const hr = {
     borderColor: '#1e293b',
     margin: '20px 0',
 };
+
+const highLight = {
+    color: '#e7c9a5',
+    fontWeight: 'bold'
+}

@@ -37,7 +37,7 @@ const BorrowBook = ({ bookId }: Props) => {
                 router.push("/my-profile");
             },
             onError: (error: Error) => {
-                toast.error("Failed to borrow book", {
+                toast.error("Your account is not verified yet", {
                     description: error.message,
                 });
             },

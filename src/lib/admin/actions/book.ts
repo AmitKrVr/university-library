@@ -2,6 +2,9 @@
 
 import { db } from "@/database/drizzle"
 import { books, borrowRecords } from "@/database/schema"
+import BookReturnConfirmation from "@/email/BookReturnConfirmation";
+import { resend } from "@/lib/email";
+import { getUserById } from "@/lib/getUserById";
 import { eq } from "drizzle-orm";
 
 export const createBook = async (params: BookParams) => {
@@ -72,10 +75,26 @@ export async function borrowStatus(id: string, newStatus: "BORROWED" | "RETURNED
                 ? { status: newStatus, newStatus, returnDate: new Date().toISOString() }
                 : { newStatus };
 
-        await db
+        const [returnStatus] = await db
             .update(borrowRecords)
             .set(updateData)
-            .where(eq(borrowRecords.id, id));
+            .where(eq(borrowRecords.id, id))
+            .returning();
+
+        const user = await getUserById(returnStatus.userId)
+        const book = await db.select({ title: books.title }).from(books).where(eq(books.id, returnStatus.bookId))
+
+        if (user.email) {
+            await resend.emails.send({
+                from: `BookWise <contact@devamit.info>`,
+                to: [user.email],
+                subject: `Thank You for Returning "${book[0].title}"`,
+                react: BookReturnConfirmation({
+                    fullName: user.name,
+                    bookTitle: book[0].title,
+                })
+            })
+        }
 
         return {
             success: true,

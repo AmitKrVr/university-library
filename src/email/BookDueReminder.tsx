@@ -12,11 +12,11 @@ import {
 } from '@react-email/components';
 import * as React from 'react';
 
-const MilestoneEmail = ({ fullName }: { fullName: string }) => {
+const BookDueReminder = ({ fullName, bookTitle, dueDate }: { fullName: string, bookTitle: string, dueDate: string }) => {
     return (
         <Html>
             <Head />
-            <Preview>You&apos;ve hit a new milestone with BookWise! 🎉</Preview>
+            <Preview>Reminder: {bookTitle} is Due Soon!</Preview>
             <Body style={main}>
                 <Container style={container}>
                     <Section>
@@ -28,22 +28,17 @@ const MilestoneEmail = ({ fullName }: { fullName: string }) => {
                                 alt='logo'
                             /> BookWise</Text>
                         <Hr style={hr} />
-                        <Text style={heading}>Congratulations on Reaching a New Milestone!</Text>
+                        <Text style={heading}>Reminder: <span style={highLight}>{bookTitle}</span> is Due Soon!</Text>
                         <Text style={text}>Hi {fullName},</Text>
                         <Text style={text}>
-                            Great news! You’ve reached a new milestone in your reading journey with BookWise. 🎉
-                            Whether it’s finishing a challenging book, staying consistent with your reading goals,
-                            or exploring new genres, your dedication inspires us.
+                            Just a reminder that <span style={highLight}>{bookTitle}</span> is due for return on <span style={highLight}>{dueDate}</span>. Kindly return it on time to avoid late fees.
                         </Text>
-                        <Text style={text}>
-                            Keep the momentum going—there are more exciting books and features waiting for you!
-                        </Text>
-                        <Text style={text}>Log in now to discover your next adventure:</Text>
+                        <Text style={text}>If you’re still reading, you can renew the book in your account.</Text>
                         <Button style={button} href="https://bookwise-library-rho.vercel.app/">
-                            Discover New Reads
+                            Renew Book Now
                         </Button>
                         <Text style={text}>
-                            Keep the pages turning,
+                            Keep reading,
                             <br />
                             The BookWise Team
                         </Text>
@@ -54,7 +49,7 @@ const MilestoneEmail = ({ fullName }: { fullName: string }) => {
     );
 };
 
-export default MilestoneEmail;
+export default BookDueReminder;
 
 const main = {
     backgroundColor: '#0f172a',
@@ -106,3 +101,8 @@ const hr = {
     borderColor: '#1e293b',
     margin: '20px 0',
 };
+
+const highLight = {
+    color: '#e7c9a5',
+    fontWeight: 'bold'
+}

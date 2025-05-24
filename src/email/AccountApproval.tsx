@@ -12,11 +12,11 @@ import {
 } from '@react-email/components';
 import * as React from 'react';
 
-const MilestoneEmail = ({ fullName }: { fullName: string }) => {
+const AccountApproval = ({ fullName }: { fullName: string }) => {
     return (
         <Html>
             <Head />
-            <Preview>You&apos;ve hit a new milestone with BookWise! 🎉</Preview>
+            <Preview>Your BookWise Account Has Been Approved!</Preview>
             <Body style={main}>
                 <Container style={container}>
                     <Section>
@@ -28,22 +28,17 @@ const MilestoneEmail = ({ fullName }: { fullName: string }) => {
                                 alt='logo'
                             /> BookWise</Text>
                         <Hr style={hr} />
-                        <Text style={heading}>Congratulations on Reaching a New Milestone!</Text>
-                        <Text style={text}>Hi {fullName},</Text>
+                        <Text style={heading}>Your BookWise Account Has Been Approved!</Text>
+                        <Text style={text}>Hi <span style={highlight}>{fullName}</span>,</Text>
                         <Text style={text}>
-                            Great news! You’ve reached a new milestone in your reading journey with BookWise. 🎉
-                            Whether it’s finishing a challenging book, staying consistent with your reading goals,
-                            or exploring new genres, your dedication inspires us.
+                            Congratulations! Your BookWise account has been approved. You can now browse our library, borrow books, and enjoy all the features of your new account.
                         </Text>
-                        <Text style={text}>
-                            Keep the momentum going—there are more exciting books and features waiting for you!
-                        </Text>
-                        <Text style={text}>Log in now to discover your next adventure:</Text>
+                        <Text style={text}>Log in to get started:</Text>
                         <Button style={button} href="https://bookwise-library-rho.vercel.app/">
-                            Discover New Reads
+                            Log in to BookWise
                         </Button>
                         <Text style={text}>
-                            Keep the pages turning,
+                            Welcome aboard,
                             <br />
                             The BookWise Team
                         </Text>
@@ -54,7 +49,7 @@ const MilestoneEmail = ({ fullName }: { fullName: string }) => {
     );
 };
 
-export default MilestoneEmail;
+export default AccountApproval;
 
 const main = {
     backgroundColor: '#0f172a',
@@ -106,3 +101,8 @@ const hr = {
     borderColor: '#1e293b',
     margin: '20px 0',
 };
+
+const highlight = {
+    color: '#e7c9a5',
+    fontWeight: 'bold'
+}
