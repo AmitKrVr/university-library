@@ -1,6 +1,7 @@
 import AdminPageLayout from "@/components/admin/AdminPageLayout";
 import BorrowedStatus from "@/components/admin/BorrowedStatus";
 import BookCover from "@/components/BookCover";
+import ReceiptDownloader from "@/components/receipt/ReceiptDownloader";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -21,9 +22,7 @@ const BorrowPage = async ({ searchParams }: { searchParams: Promise<{ sort: stri
         borrowRecord: borrowRecords,
         name: users.fullName,
         email: users.email,
-        title: books.title,
-        coverColor: books.coverColor,
-        coverImage: books.coverUrl,
+        bookDetail: books
     })
         .from(borrowRecords)
         .leftJoin(users, eq(users.id, borrowRecords.userId))
@@ -102,9 +101,9 @@ const BorrowPage = async ({ searchParams }: { searchParams: Promise<{ sort: stri
                                 <TableCell className="font-medium text-dark-200 max-w-[300px] truncate">
                                     <Link href={`/admin/borrow-records/${book.borrowRecord.bookId}`} className="flex items-center gap-2 ">
                                         <div>
-                                            <BookCover variant="extraSmall" coverColor={book.coverColor ?? ''} coverImage={book.coverImage ?? ''} />
+                                            <BookCover variant="extraSmall" coverColor={book.bookDetail?.coverColor ?? ''} coverImage={book.bookDetail?.coverUrl ?? ''} />
                                         </div>
-                                        {book.title}
+                                        {book.bookDetail?.title}
                                     </Link>
                                 </TableCell>
 
@@ -154,15 +153,21 @@ const BorrowPage = async ({ searchParams }: { searchParams: Promise<{ sort: stri
                                 </TableCell>
 
                                 <TableCell>
-                                    <Button className="flex gap-1 font-medium cursor-pointer items-center bg-light-100 text-[#25388C] hover:bg-light-100">
-                                        <Image
-                                            alt="reciept"
-                                            src="/icons/admin/receipt.svg"
-                                            width={15}
-                                            height={15}
-                                        />
-                                        Generate
-                                    </Button>
+                                    {book.bookDetail
+                                        ? (
+                                            <ReceiptDownloader borrow={book.borrowRecord} book={book.bookDetail}>
+                                                <Button className="flex gap-1 font-medium cursor-pointer items-center bg-light-100 text-[#25388C] hover:bg-light-100">
+                                                    <Image
+                                                        alt="reciept"
+                                                        src="/icons/admin/receipt.svg"
+                                                        width={15}
+                                                        height={15}
+                                                    />
+                                                    Generate
+                                                </Button>
+                                            </ReceiptDownloader>
+                                        ) : "--"
+                                    }
                                 </TableCell>
                             </TableRow>
                         )

@@ -42,7 +42,7 @@ const BookBorrowConfirmation = (
                             <Text>• Due Date: <span style={highLight}>{dueDate}</span></Text>
                         </Section>
                         <Text style={text}>Enjoy your reading, and don’t forget to return the book on time!</Text>
-                        <Button style={button} href="https://bookwise-library-rho.vercel.app/profile">
+                        <Button style={button} href="https://bookwise-library-rho.vercel.app/my-profile">
                             View Borrowed Books
                         </Button>
                         <Text style={text}>

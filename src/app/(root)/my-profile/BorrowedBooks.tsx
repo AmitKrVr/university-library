@@ -7,6 +7,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
 import ProfilePagination from "./ProfilePagination"
+import ReceiptDownloader from "@/components/receipt/ReceiptDownloader"
 
 interface Props {
     borrowedWithBooks: Array<{
@@ -111,14 +112,7 @@ const BorrowedBooks = ({ borrowedWithBooks }: Props) => {
 
                                             </div>
                                             <div className="flex items-end min-w-8">
-                                                <Image
-                                                    alt="receipt"
-                                                    src="/icons/receipt.svg"
-                                                    height={20}
-                                                    width={20}
-                                                    className="h-8 w-8 p-2 rounded-md cursor-pointer"
-                                                    style={{ backgroundColor: `${book.coverColor}80` }}
-                                                />
+                                                <ReceiptDownloader borrow={borrow} book={book} />
                                             </div>
                                         </div>
                                     </CardContent>
