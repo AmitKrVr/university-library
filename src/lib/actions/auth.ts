@@ -3,13 +3,11 @@
 import { signIn } from "@/auth";
 import { db } from "@/database/drizzle";
 import { users } from "@/database/schema";
-import { hash } from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import ratelimit from "../ratelimit";
 import { redirect } from "next/navigation";
-import { workflowClient } from "../workflow";
-import config from "../config";
+import { requestOTP } from "../auth/requestOtp";
 
 export const signInWithCrendentials = async (params: Pick<AuthCrendentials, "email" | "password">) => {
     const { email, password } = params;
@@ -29,20 +27,19 @@ export const signInWithCrendentials = async (params: Pick<AuthCrendentials, "ema
         }
 
         return { success: true };
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-        console.log(error, "Signin error");
         return { success: false, error: "Signin error" };
     }
 }
 
 export const signUP = async (params: AuthCrendentials) => {
-    const { fullName, email, universityId, password, universityCard } = params;
+    const { email, fullName } = params;
 
     const ip = (await headers()).get('x-forwarded-for') || "127.0.0.1";
     const { success } = await ratelimit.limit(ip);
 
     if (!success) return redirect("/too-fast");
-
 
     // Check if the user already exists
     const existingUser = await db
@@ -55,31 +52,17 @@ export const signUP = async (params: AuthCrendentials) => {
         return { success: false, error: "User already exists" };
     }
 
-    const hashedPassword = await hash(password, 10);
+    const result = await requestOTP(email, fullName);
 
-    try {
-        await db.insert(users).values({
-            fullName,
-            email,
-            universityId,
-            password: hashedPassword,
-            universityCard,
-        });
+    if (result.success) {
+        return {
+            success: true,
+        }
+    }
 
-        await workflowClient.trigger({
-            url: `${config.env.prodApiEndpoint}/api/workflow`,
-            body: {
-                email,
-                fullName,
-            }
-        })
-
-        await signInWithCrendentials({ email, password });
-
-        return { success: true };
-    } catch (error) {
-        console.log(error, "Signup error")
-        return { success: false, error: "Signup error" }
+    return {
+        success: false,
+        error: "Unable to send OTP, Please try again later"
     }
 };
 

@@ -13,11 +13,16 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import FileUpload from "./FileUpload";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
+import OtpInputField from "./OtpInputField";
+import { verifyOTPAndSignup } from "@/lib/auth/verifyOTPAndSignup";
+import { resendOTP } from "@/lib/auth/resendOtp";
+import Image from "next/image";
 
 interface Props<T extends FieldValues> {
     schema: ZodType<T>;
     defaultValues: T;
-    onSubmit: (data: T) => Promise<{ success: boolean, errro?: string }>;
+    onSubmit: (data: T) => Promise<{ success: boolean, error?: string }>;
     type: "SIGN_IN" | "SIGN_UP";
 }
 
@@ -26,6 +31,10 @@ const AuthForm = <T extends FieldValues>({
 }: Props<T>) => {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
+    const [otpDialogOpen, setOtpDialogOpen] = useState(false)
+    const [otpLoading, setOtpLoading] = useState(false)
+    const [userEmail, setUserEmail] = useState("")
+    const [formData, setFormData] = useState<T | null>(null)
 
     const isSignIn = type === "SIGN_IN"
 
@@ -40,25 +49,81 @@ const AuthForm = <T extends FieldValues>({
         try {
             const result = await onSubmit(data);
             if (result.success) {
+                if (isSignIn) {
+                    toast.success("Success", {
+                        description: "You have Successfully signed in."
+                    })
+                    router.push("/");
+                    return
+                }
+                setFormData(data)
+                setUserEmail((data).email)
+                setOtpDialogOpen(true);
                 toast.success("Success", {
-                    description: isSignIn
-                        ? "You have Successfully signed in."
-                        : "You have successfully signed up."
+                    description: "OTP sent to your email. Please verify to complete signup."
                 })
-                router.push("/");
             } else {
                 toast.error(`Error ${isSignIn ? "signing in" : "signing up"}`, {
-                    description: result.errro ?? `An error occurred during ${isSignIn ? "signing in" : "signing up"}`
+                    description: result.error ?? `An error occurred during ${isSignIn ? "signing in" : "signing up"}`
                 })
             }
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (err) {
             toast.error("An unexpected error occurred.");
         } finally {
             setLoading(false)
         }
-
-
     }
+
+    const handleOtpVerification = async (otp: string) => {
+        if (!formData || !userEmail) return;
+
+        setOtpLoading(true)
+
+        try {
+            const result = await verifyOTPAndSignup({
+                ...formData as any,
+                otp
+            });
+
+            if (result.success) {
+                toast.success("Account created successfully!");
+                setOtpDialogOpen(false);
+                router.push("/");
+            } else {
+                toast.error("OTP verification failed", {
+                    description: result.error
+                });
+            }
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
+            toast.error("An error occurred during verification");
+        } finally {
+            setOtpLoading(false)
+        }
+    }
+
+    const handleOtpResend = async (email: string, fullName: string) => {
+        if (!email) return;
+        try {
+            const result = await resendOTP(email, fullName);
+            if (result.success) {
+                toast.success("OTP Resent", {
+                    description: "A new verification code has been sent to your email"
+                })
+            } else {
+                toast.error("Error", {
+                    description: result.error
+                })
+            }
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
+            toast.error("OTP Resend Failed", {
+                description: "Failed to send verification code. Please try again later."
+            })
+        }
+    }
+
 
     return (
         <div className="flex flex-col gap-4">
@@ -125,6 +190,38 @@ const AuthForm = <T extends FieldValues>({
 
                 <Link href={isSignIn ? "/sign-up" : "/sign-in"} className="font-bold text-primary">{isSignIn ? "Create an account" : "Sign in"}</Link>
             </p>
+
+
+            <Dialog open={otpDialogOpen} onOpenChange={setOtpDialogOpen}>
+                <DialogContent
+                    onInteractOutside={(e) => e.preventDefault()}
+                    onEscapeKeyDown={(e) => e.preventDefault()}
+                    className="pattern w-lg text-light-100 border-light-500"
+                >
+                    <DialogHeader>
+                        <div
+                            className={`mx-auto size-16 bg-primary border-[10px] border-light-800 rounded-full flex items-center justify-center`}
+                        >
+                            <Image alt="icon" src="/icons/mailbox.svg" width={30} height={30} />
+                        </div>
+
+                        <DialogTitle className="text-2xl text-center text-light-100">Verify Your Email</DialogTitle>
+                        <DialogDescription className="text-center">
+                            <p>We have send a verification code to <span className="text-primary">{userEmail}</span>.</p>
+                            <p>Please check your inbox and input the code below to activate your account</p>
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 mt-3">
+                        <OtpInputField
+                            email={userEmail}
+                            fullName={formData ? formData.fullName : "User"}
+                            onComplete={handleOtpVerification}
+                            loading={otpLoading}
+                            onResend={handleOtpResend}
+                        />
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

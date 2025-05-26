@@ -42,6 +42,17 @@ const BookCover = ({ className,
                 <IKImage
                     urlEndpoint={config.env.imageKit.urlEndpoint}
                     fill
+                    sizes={
+                        variant === "extraSmall"
+                            ? "29px"
+                            : variant === "small"
+                                ? "55px"
+                                : variant === "medium"
+                                    ? "144px"
+                                    : variant === "regular"
+                                        ? "(max-width: 640px) 114px, 174px"
+                                        : "(max-width: 640px) 256px, 296px"
+                    }
                     src={coverImage}
                     alt="Book cover"
                     loading="lazy"

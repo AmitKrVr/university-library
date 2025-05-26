@@ -128,7 +128,7 @@ const ReceiptDocument = ({ borrow, book }: Props) => {
                         </View>
                         <View style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, lineHeight: 1.2 }}>
                             <Text style={styles.footerText}>Website: </Text>
-                            <Text style={styles.footerValue}>bookwise.example.com</Text>
+                            <Text style={styles.footerValue}>bookwise-library-rho.vercel.app/</Text>
                         </View>
                         <View style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 4, lineHeight: 1.2 }}>
                             <Text style={styles.footerText}>Email: </Text>
