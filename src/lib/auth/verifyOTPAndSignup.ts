@@ -7,6 +7,8 @@ import { users } from "@/database/schema";
 import { workflowClient } from "../workflow";
 import config from "../config";
 import { signInWithCrendentials } from "../actions/auth";
+import redis from "@/database/redis";
+import { userCountKey } from "../cacheKeys";
 
 export const verifyOTPAndSignup = async (params: AuthCrendentials & { otp: string }) => {
     const { fullName, email, universityId, password, universityCard, otp } = params;
@@ -26,6 +28,7 @@ export const verifyOTPAndSignup = async (params: AuthCrendentials & { otp: strin
         });
 
         await deleteOtp(email);
+        await redis.del(userCountKey);
 
         await workflowClient.trigger({
             url: `${config.env.prodApiEndpoint}/api/workflow`,

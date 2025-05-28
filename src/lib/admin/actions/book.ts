@@ -1,8 +1,10 @@
 "use server"
 
 import { db } from "@/database/drizzle"
+import redis from "@/database/redis";
 import { books, borrowRecords } from "@/database/schema"
 import BookReturnConfirmation from "@/email/BookReturnConfirmation";
+import { bookCountKey } from "@/lib/cacheKeys";
 import { resend } from "@/lib/email";
 import { getUserById } from "@/lib/getUserById";
 import { eq } from "drizzle-orm";
@@ -15,6 +17,8 @@ export const createBook = async (params: BookParams) => {
                 ...params,
                 availableCopies: params.totalCopies,
             }).returning();
+
+        await redis.del(bookCountKey);
 
         return {
             success: true,
@@ -56,6 +60,7 @@ export const updateBook = async (book: { id: string } & Partial<typeof books.$in
 export async function deleteBook(bookId: string) {
     try {
         await db.delete(books).where(eq(books.id, bookId));
+        await redis.del(bookCountKey);
         return {
             success: true,
             message: "Book deleted successfully"

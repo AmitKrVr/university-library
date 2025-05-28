@@ -1,6 +1,6 @@
 "use client"
 
-import { truncateText } from '@/lib/utils';
+import { formatDate, truncateText } from '@/lib/utils';
 import { Document, Page, Text, View, StyleSheet, Image as ReactImage } from '@react-pdf/renderer'
 
 interface Props {
@@ -30,21 +30,6 @@ const ReceiptDocument = ({ borrow, book }: Props) => {
     const returnDate = borrow.returnDate ? new Date(borrow.returnDate) : null;
 
     const duration = Math.ceil((dueDate.getTime() - borrowDate.getTime()) / (1000 * 3600 * 24));
-
-    const formatDate = (date: Date, format: 'short' | 'numeric' = 'short') => {
-        if (format === 'numeric') {
-            return date.toLocaleDateString('en-US', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
-        }
-        return date.toLocaleDateString('en-US', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
-        });
-    };
 
     return (
         <Document>

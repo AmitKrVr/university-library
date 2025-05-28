@@ -424,7 +424,7 @@
 /* For Admin */
 @layer components {
     .admin-container {
-        @apply flex w-[calc(100%-264px)] flex-1 flex-col bg-light-300 p-5 xs:p-10;
+        @apply flex w-[calc(100%-264px)] flex-1 flex-col bg-light-300 p-5 xs:p-5;
     }
 
     .back-btn {
@@ -572,7 +572,7 @@
 
     /* Header */
     .admin-header {
-        @apply flex lg:items-end items-start justify-between lg:flex-row flex-col gap-5 sm:mb-10 mb-5;
+        @apply flex lg:items-end items-start justify-between lg:flex-row flex-col gap-5 mb-5;
     }
 
     /* Search */

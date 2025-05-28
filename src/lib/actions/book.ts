@@ -10,6 +10,7 @@ import { resend } from "../email";
 import BookBorrowConfirmation from "@/email/BookBorrowConfirmation";
 import { workflowClient } from "../workflow";
 import config from "../config";
+import { borrowCountKey } from "../cacheKeys";
 
 type GetBooksResponse =
     | { success: true; data: Book[] }
@@ -59,6 +60,7 @@ export const borrowBook = async (params: BorrowBookParams) => {
 
         await redis.del(`book-details:${bookId}`)
         await redis.del("all_books_first_page")
+        await redis.del(borrowCountKey)
 
         if (user.email) {
             await resend.emails.send({
