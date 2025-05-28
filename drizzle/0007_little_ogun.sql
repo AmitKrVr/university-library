@@ -1,0 +1,1 @@
+ALTER TABLE "contact_us" ADD COLUMN "created_at" timestamp with time zone DEFAULT now();

@@ -43,6 +43,27 @@
       "when": 1747363175528,
       "tag": "0005_lyrical_living_lightning",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1748463859912,
+      "tag": "0006_material_rage",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1748463906371,
+      "tag": "0007_little_ogun",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1748465869427,
+      "tag": "0008_natural_zeigeist",
+      "breakpoints": true
     }
   ]
 }

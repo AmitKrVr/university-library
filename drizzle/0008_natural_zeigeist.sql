@@ -1,0 +1,1 @@
+ALTER TABLE "contact_us" ALTER COLUMN "message" SET DATA TYPE varchar(1000);

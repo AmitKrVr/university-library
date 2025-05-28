@@ -45,3 +45,11 @@ export const borrowRecords = pgTable("borrow_records", {
     status: BORROW_STATUS_ENUM("status").default("BORROWED").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
+
+export const contactUs = pgTable("contact_us", {
+    id: uuid("id").notNull().primaryKey().defaultRandom().unique(),
+    name: varchar("name", { length: 255 }).notNull(),
+    email: text("email").notNull(),
+    message: varchar("message", { length: 1000 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+})
